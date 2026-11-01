@@ -179,37 +179,6 @@ app.get('/api/admin/stats', async (req, res) => {
 });
 
 // ==========================================
-// 9. AI LIBRARY ASSISTANT / BOOK RECOMMENDATION
-// ==========================================
-app.post('/api/ai/recommend', async (req, res) => {
-    try {
-        const { keyword, category } = req.body;
-        let query = 'SELECT title, author_name, category, description, rating_avg FROM books WHERE 1=1';
-        let params = [];
-
-        if (category) {
-            query += ' AND category_id = (SELECT id FROM categories WHERE name = ?)';
-            params.push(category);
-        }
-        if (keyword) {
-            query += ' AND (title LIKE ? OR description LIKE ?)';
-            params.push(`%${keyword}%`, `%${keyword}%`);
-        }
-
-        query += ' ORDER BY rating_avg DESC LIMIT 5';
-        const [recommendations] = await db.query(query, params);
-
-        res.json({
-            success: true,
-            assistantMessage: `Narito ang ilang rekomendasyon ng aklat na aking nakita para sa iyong hinahanap:`,
-            recommendations
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ==========================================
 // 10. DARK MODE / THEME PREFERENCE SAVING
 // ==========================================
 app.put('/api/users/:id/theme', async (req, res) => {

@@ -3,7 +3,6 @@ const STORAGE_KEYS = {
     cart: "libraryCart",
     sales: "librarySales",
     borrows: "libraryBorrows",
-    purchases: "libraryPurchases",
     favorites: "libraryFavorites",
     recentlyViewed: "libraryRecent",
     notifications: "libraryNotifications",
@@ -167,9 +166,6 @@ let sales = Object.assign({}, defaultSales, readJSON(STORAGE_KEYS.sales, {}));
 
 let borrows = readJSON(STORAGE_KEYS.borrows, []);
 if (!Array.isArray(borrows)) borrows = [];
-
-let purchases = readJSON(STORAGE_KEYS.purchases, []);
-if (!Array.isArray(purchases)) purchases = [];
 
 let reports = readJSON(STORAGE_KEYS.reports, []);
 if (!Array.isArray(reports)) reports = [];
@@ -568,7 +564,6 @@ function saveLibraryData() {
         [STORAGE_KEYS.cart, cartByUser],
         [STORAGE_KEYS.sales, sales],
         [STORAGE_KEYS.borrows, borrows],
-        [STORAGE_KEYS.purchases, purchases],
         [STORAGE_KEYS.favorites, favoritesByUser],
         [STORAGE_KEYS.recentlyViewed, recentByUser],
         [STORAGE_KEYS.notifications, notifications],
@@ -636,16 +631,6 @@ function sameUser(a, b) {
 function getUserBorrows() {
     return borrows.filter(
         borrow => sameUser(borrow.username, currentUser) && !borrow.returned
-    );
-}
-
-function canRateBook(bookId) {
-    if (!currentUser) return false;
-
-    return borrows.some(
-        borrow => borrow.id === bookId && sameUser(borrow.username, currentUser)
-    ) || purchases.some(
-        purchase => purchase.id === bookId && sameUser(purchase.username, currentUser)
     );
 }
 
@@ -785,7 +770,7 @@ function renderBookCard(book) {
             <div class="actions">
                 <button class="action-btn" onclick="borrowBook('${escapeHTML(book.id)}')">Borrow</button>
                 <button class="action-btn fav" onclick="toggleFavorite('${escapeHTML(book.id)}')">${isFavorite ? "♥" : "♡"}</button>
-                <button class="action-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')" title="${canRateBook(book.id) ? "Rate" : "Borrow or purchase this book to rate"}" ${canRateBook(book.id) ? "" : "disabled"}>Rate</button>
+                <button class="action-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')">Rate</button>
                 <button class="action-btn report" onclick="openReportModal('book', '${escapeHTML(book.id)}')">Report</button>
                 <button class="action-btn" onclick="viewBook('${escapeHTML(book.id)}')">View</button>
             </div>
@@ -970,7 +955,7 @@ function renderBooksPage() {
                         ${primaryBtn}
                         <button class="action-btn" onclick="addToCart('${escapeHTML(book.id)}')" title="${book.isPremium && !isUserPremium(currentUser) ? "Premium members only" : "Buy"}">${book.isPremium && !isUserPremium(currentUser) ? "🔒" : "🛒"}</button>
                         <button class="action-btn fav" onclick="toggleFavorite('${escapeHTML(book.id)}')" title="Favorite">${isFavorite ? "♥" : "♡"}</button>
-                        <button class="action-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')" title="${canRateBook(book.id) ? "Rate" : "Borrow or purchase this book to rate"}" ${canRateBook(book.id) ? "" : "disabled"}>★</button>
+                        <button class="action-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')" title="Rate">★</button>
                         <button class="action-btn report" onclick="openReportModal('book', '${escapeHTML(book.id)}')" title="Report">⚑</button>
                         <button class="action-btn" onclick="viewBook('${escapeHTML(book.id)}')" title="Details">👁</button>
                     </div>
@@ -1357,7 +1342,6 @@ function exportLibraryData() {
         books: books.length,
         cart,
         borrows: borrows.filter(b => sameUser(b.username, currentUser)),
-        purchases: purchases.filter(purchase => sameUser(purchase.username, currentUser)),
         favorites,
         exportedAt: new Date().toISOString()
     };
@@ -1439,7 +1423,6 @@ function removeAccountData(username) {
     });
 
     borrows = borrows.filter(borrow => !sameUser(borrow.username, username));
-    purchases = purchases.filter(purchase => !sameUser(purchase.username, username));
 
     books.forEach(book => {
         if (book.uploadedBy && sameUser(book.uploadedBy, username)) book.uploadedBy = null;
@@ -2061,7 +2044,7 @@ function viewBook(id) {
             ${borrowReturnBtn}
             <button class="secondary-btn" onclick="addToCart('${escapeHTML(book.id)}')">${book.isPremium && !isUserPremium(currentUser) ? "🔒 Premium only" : "Buy"}</button>
             <button class="secondary-btn fav" onclick="toggleFavorite('${escapeHTML(book.id)}')">${isFavorite ? "♥ Favorited" : "♡ Favorite"}</button>
-            <button class="secondary-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')" title="${canRateBook(book.id) ? "Rate" : "Borrow or purchase this book to rate"}" ${canRateBook(book.id) ? "" : "disabled"}>Rate</button>
+            <button class="secondary-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')">Rate</button>
         </div>
     `;
 
@@ -2195,15 +2178,6 @@ function checkoutCart() {
     sales.month += total;
     sales.count += cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
-    cart.forEach(item => {
-        purchases.push({
-            id: item.id,
-            username: currentUser,
-            purchasedOn: today(),
-            quantity: item.quantity || 1
-        });
-    });
-
     cart = [];
 
     addNotification(
@@ -2218,11 +2192,6 @@ function checkoutCart() {
 }
 
 function openRateModal(bookId) {
-    if (!canRateBook(bookId)) {
-        alert("You must borrow or purchase this book before you can rate it.");
-        return;
-    }
-
     const ratingKey = String(currentUser).toLowerCase();
     const userList = [...(userRatings[ratingKey] || []), ...(userRatings[currentUser] || [])];
     if (userList.includes(bookId)) {
@@ -2263,11 +2232,6 @@ function highlightStars(count) {
 
 function submitRating() {
     if (!currentRatingBookId) return;
-    if (!canRateBook(currentRatingBookId)) {
-        closeRateModal();
-        alert("You must borrow or purchase this book before you can rate it.");
-        return;
-    }
 
     const ratingKey = String(currentUser).toLowerCase();
     if (!userRatings[ratingKey]) {
@@ -3612,10 +3576,6 @@ function migrateUsernameData(oldName, newName) {
         if (sameUser(borrow.username, oldName)) borrow.username = newName;
     });
 
-    purchases.forEach(purchase => {
-        if (sameUser(purchase.username, oldName)) purchase.username = newName;
-    });
-
     loadChats();
     const oldKey = chatKey(oldName);
     const newKey = chatKey(newName);
@@ -4279,7 +4239,6 @@ const ADMIN_SEEN_KEY = "libraryAdminLastSeen";
 const ADMIN_PREF_KEY = "libraryAdminChatStatus";
 const ADMIN_ONLINE_WINDOW_MS = 30000;
 const ADMIN_HEARTBEAT_MS = 10000;
-const AWAY_NOTICE_GAP_MS = 5 * 60 * 1000;
 
 const CHAT_QUICK_OPTIONS = [
     {
@@ -4500,6 +4459,11 @@ function endChatSession() {
     clearInterval(adminHeartbeatTimer);
     chatRefreshTimer = null;
     adminHeartbeatTimer = null;
+    if (currentUser) {
+        fetch("/api/reset", { method: "POST" }).catch(error => {
+            console.warn("Could not clear the AI assistant conversation:", error);
+        });
+    }
 
     if (currentUser && isLibrarianOrAdmin(currentUser)) {
         try {
@@ -4526,7 +4490,7 @@ function chatBubbleHTML(message, viewer) {
     const mine = message.from === viewer;
 
     let label;
-    if (message.from === "bot") label = "🤖 Library Assistant";
+    if (message.from === "bot") label = "🤖 Library AI Assistant";
     else if (message.from === "admin") label = viewer === "admin" ? "You" : "🛡️ Support Team";
     else label = viewer === "user" ? "You" : "Member";
 
@@ -4584,7 +4548,7 @@ function renderChatWidget(force = false) {
 
     const presence = document.getElementById("chatPresence");
     if (presence) {
-        presence.textContent = online ? "🟢 Admin is online" : "🟡 Admin is away · quick help available";
+        presence.textContent = online ? "🟢 Support team online" : "✨ AI assistant ready";
         presence.className = `chat-presence ${online ? "online" : "away"}`;
     }
 
@@ -4598,15 +4562,15 @@ function renderChatWidget(force = false) {
     lastChatSig = signature;
 
     const greeting = online
-        ? `Hi ${escapeHTML(currentUser)}! 👋 Support is online. Pick an issue type above, add a Book ID if you have one, then send your message.`
-        : `Hi ${escapeHTML(currentUser)}! 👋 Support is away. Choose an issue type, use a quick help option below, or leave a ticket message and we'll reply when back.`;
+        ? `Hi ${escapeHTML(currentUser)}! 👋 I'm your Library AI Assistant. Ask me a question, or send a message for the support team.`
+        : `Hi ${escapeHTML(currentUser)}! 👋 I'm your Library AI Assistant. Ask me anything about the library. If you need a person, choose that option and I'll notify the support team.`;
 
     const messagesElement = document.getElementById("chatMessages");
 
     if (messagesElement) {
         messagesElement.innerHTML = `
             <div class="chat-msg theirs from-bot">
-                <span class="chat-msg-label">🤖 Library Assistant</span>
+                <span class="chat-msg-label">🤖 Library AI Assistant</span>
                 <div class="chat-bubble">${greeting}</div>
             </div>
             ${messages.map(message => chatBubbleHTML(message, "user")).join("")}
@@ -4685,15 +4649,33 @@ function botReply(username, text, optionId) {
         pushChatMessage(username, "bot", option.reply);
         if (option.flagHuman) flagChatForAdmin(username);
     } else {
-        loadChats();
-        const chat = getChat(username, true);
+        requestAssistantReply(username, text);
+        return;
+    }
 
-        if (Date.now() - (chat.lastAwayNoticeAt || 0) > AWAY_NOTICE_GAP_MS) {
-            chat.lastAwayNoticeAt = Date.now();
-            saveChats();
-            pushChatMessage(username, "bot", "Thanks for your message! The admin is away right now, but I saved it and they'll reply when they're back. In the meantime, one of the quick options below might help.");
+    if (sameUser(currentUser, username)) renderChatWidget(true);
+}
+
+async function requestAssistantReply(username, text) {
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "The assistant request failed.");
+        if (typeof result.reply !== "string" || !result.reply.trim()) {
+            throw new Error("The assistant returned an empty response.");
         }
-
+        pushChatMessage(username, "bot", result.reply);
+    } catch (error) {
+        console.error("AI assistant request failed:", error);
+        pushChatMessage(
+            username,
+            "bot",
+            "The AI assistant is temporarily unavailable. Your message has been saved for the support team."
+        );
         flagChatForAdmin(username);
     }
 
