@@ -1,6 +1,6 @@
 CREATE DATABASE IF NOT EXISTS penetrative_library
     CHARACTER SET utf8mb4
-    COLLATE utf8mb4_0900_ai_ci;
+    COLLATE utf8mb4_general_ci;
 
 USE penetrative_library;
 SET NAMES utf8mb4;
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     UNIQUE KEY uq_users_username (username),
     UNIQUE KEY uq_users_email (email),
     KEY idx_users_role (role)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS author_profiles (
     user_id      BIGINT UNSIGNED NOT NULL,
@@ -39,14 +39,14 @@ CREATE TABLE IF NOT EXISTS author_profiles (
     KEY idx_author_status (status),
     CONSTRAINT fk_author_user     FOREIGN KEY (user_id)     REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_author_reviewer FOREIGN KEY (reviewed_by) REFERENCES users (id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS categories (
     id    SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
     name  VARCHAR(40)       NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_categories_name (name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS books (
     id               BIGINT UNSIGNED   NOT NULL AUTO_INCREMENT,
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS books (
     CONSTRAINT fk_books_uploader FOREIGN KEY (uploaded_by) REFERENCES users (id) ON DELETE SET NULL,
     CONSTRAINT chk_books_copies  CHECK (copies_available <= copies_total),
     CONSTRAINT chk_books_price   CHECK (price >= 0)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS book_images (
     id         BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS book_images (
     PRIMARY KEY (id),
     KEY idx_book_images_book (book_id, sort_order),
     CONSTRAINT fk_book_images_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS borrows (
     id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS borrows (
     CONSTRAINT fk_borrows_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_borrows_book FOREIGN KEY (book_id) REFERENCES books (id),
     CONSTRAINT chk_borrows_dates CHECK (due_date >= borrowed_on)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS cart_items (
     user_id   BIGINT UNSIGNED   NOT NULL,
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS cart_items (
     CONSTRAINT fk_cart_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_cart_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE,
     CONSTRAINT chk_cart_qty CHECK (quantity > 0)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS favorites (
     user_id    BIGINT UNSIGNED NOT NULL,
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS favorites (
     PRIMARY KEY (user_id, book_id),
     CONSTRAINT fk_fav_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_fav_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS recently_viewed (
     user_id   BIGINT UNSIGNED NOT NULL,
@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS recently_viewed (
     KEY idx_recent_user_time (user_id, viewed_at),
     CONSTRAINT fk_recent_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_recent_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS book_ratings (
     user_id    BIGINT UNSIGNED  NOT NULL,
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS book_ratings (
     CONSTRAINT fk_rating_user  FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_rating_book  FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE,
     CONSTRAINT chk_rating_stars CHECK (stars BETWEEN 1 AND 5)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS orders (
     id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS orders (
     PRIMARY KEY (id),
     KEY idx_orders_user (user_id, created_at),
     CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS order_items (
     id             BIGINT UNSIGNED   NOT NULL AUTO_INCREMENT,
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS order_items (
     KEY idx_order_items_order (order_id),
     CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE,
     CONSTRAINT fk_order_items_book  FOREIGN KEY (book_id)  REFERENCES books (id)  ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS subscriptions (
     id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     PRIMARY KEY (id),
     KEY idx_subs_user (user_id, status),
     CONSTRAINT fk_subs_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS transactions (
     id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -207,7 +207,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     CONSTRAINT fk_tx_order FOREIGN KEY (order_id)        REFERENCES orders (id)        ON DELETE SET NULL,
     CONSTRAINT fk_tx_borrow FOREIGN KEY (borrow_id)      REFERENCES borrows (id)       ON DELETE SET NULL,
     CONSTRAINT fk_tx_sub   FOREIGN KEY (subscription_id) REFERENCES subscriptions (id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS reports (
     id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -226,7 +226,7 @@ CREATE TABLE IF NOT EXISTS reports (
     CONSTRAINT fk_reports_book     FOREIGN KEY (book_id)        REFERENCES books (id) ON DELETE CASCADE,
     CONSTRAINT fk_reports_target   FOREIGN KEY (target_user_id) REFERENCES users (id) ON DELETE SET NULL,
     CONSTRAINT fk_reports_handler  FOREIGN KEY (handled_by)     REFERENCES users (id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS notifications (
     id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -238,7 +238,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     PRIMARY KEY (id),
     KEY idx_notif_user (user_id, is_read, created_at),
     CONSTRAINT fk_notif_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS friend_requests (
     id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -252,7 +252,7 @@ CREATE TABLE IF NOT EXISTS friend_requests (
     KEY idx_fr_from (from_user_id, status),
     CONSTRAINT fk_fr_from FOREIGN KEY (from_user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_fr_to   FOREIGN KEY (to_user_id)   REFERENCES users (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS friendships (
     user_a_id  BIGINT UNSIGNED NOT NULL,
@@ -262,7 +262,7 @@ CREATE TABLE IF NOT EXISTS friendships (
     KEY idx_friend_b (user_b_id),
     CONSTRAINT fk_friend_a FOREIGN KEY (user_a_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_friend_b FOREIGN KEY (user_b_id) REFERENCES users (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS direct_messages (
     id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -276,7 +276,7 @@ CREATE TABLE IF NOT EXISTS direct_messages (
     KEY idx_dm_inbox (recipient_id, read_at),
     CONSTRAINT fk_dm_sender    FOREIGN KEY (sender_id)    REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_dm_recipient FOREIGN KEY (recipient_id) REFERENCES users (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS support_conversations (
     id                 BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -289,7 +289,7 @@ CREATE TABLE IF NOT EXISTS support_conversations (
     UNIQUE KEY uq_support_user (user_id),
     KEY idx_support_updated (needs_human, updated_at),
     CONSTRAINT fk_support_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS support_messages (
     id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -306,7 +306,7 @@ CREATE TABLE IF NOT EXISTS support_messages (
     KEY idx_support_unread (conversation_id, sender_type, is_read),
     CONSTRAINT fk_smsg_conversation FOREIGN KEY (conversation_id) REFERENCES support_conversations (id) ON DELETE CASCADE,
     CONSTRAINT fk_smsg_sender       FOREIGN KEY (sender_id)       REFERENCES users (id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS staff_presence (
     user_id      BIGINT UNSIGNED NOT NULL,
@@ -314,7 +314,7 @@ CREATE TABLE IF NOT EXISTS staff_presence (
     last_seen_at DATETIME        NULL,
     PRIMARY KEY (user_id),
     CONSTRAINT fk_presence_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS support_quick_options (
     id         SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -327,7 +327,7 @@ CREATE TABLE IF NOT EXISTS support_quick_options (
     is_active  TINYINT(1)        NOT NULL DEFAULT 1,
     PRIMARY KEY (id),
     UNIQUE KEY uq_quick_code (code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS support_canned_replies (
     id         SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -335,7 +335,7 @@ CREATE TABLE IF NOT EXISTS support_canned_replies (
     sort_order SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
     UNIQUE KEY uq_canned_body (body)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS faq_items (
     id         SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -345,7 +345,7 @@ CREATE TABLE IF NOT EXISTS faq_items (
     is_active  TINYINT(1)        NOT NULL DEFAULT 1,
     PRIMARY KEY (id),
     UNIQUE KEY uq_faq_question (question)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 DROP TRIGGER IF EXISTS trg_borrows_before_insert;
 DROP TRIGGER IF EXISTS trg_borrows_after_insert;

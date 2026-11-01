@@ -1,15 +1,24 @@
-// server.js
-const express = require('express');
-const cors = require('cors');
-const bcrypt = require('bcrypt');
 require('dotenv').config();
+const express = require('express');
 const db = require('./db');
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT 1 + 1 AS solution');
+    res.json({ success: true, message: 'Database connected successfully!', result: rows[0].solution });
+  } catch (err) {
+    console.error('Database connection error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 // ==========================================
 // 1. VIEW & SEARCH/FILTER BOOKS (Kasama ang Availability)
