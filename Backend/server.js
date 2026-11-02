@@ -21,7 +21,7 @@ app.listen(PORT, () => {
 });
 
 // ==========================================
-// 1. VIEW & SEARCH/FILTER BOOKS (Kasama ang Availability)
+// 1. VIEW & SEARCH/FILTER BOOKS 
 // ==========================================
 app.get('/api/books', async (req, res) => {
     try {
