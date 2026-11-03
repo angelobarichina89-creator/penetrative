@@ -1,39 +1,35 @@
-const bcrypt = require('bcrypt');
-const db = require('./db'); // Assumes db.js exports your database connection
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
-async function resetPassword(memberEmail, newPassword) {
-    if (!memberEmail || !newPassword) {
-        console.log('❌ Please provide both email and new password.');
-        console.log('Usage: node reset-member-password.js <email> <new_password>');
-        process.exit(1);
+const bcrypt = require('bcryptjs');
+const db = require('./db');
+
+async function main() {
+    const email = process.argv[2]?.trim().toLowerCase();
+    const newPassword = process.env.NEW_PASSWORD;
+
+    if (!email || !newPassword) {
+        throw new Error(
+            'Usage: set NEW_PASSWORD in the environment, then run `node reset-member-password.js member@example.com`.'
+        );
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error('Provide a valid member email address.');
+    }
+    if (newPassword.length < 8 || !/^[A-Za-z0-9_@#?!-]+$/.test(newPassword)) {
+        throw new Error('Password must be at least 8 characters and use only letters, numbers, _ @ - # ? !.');
     }
 
-    try {
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    const [users] = await db.execute('SELECT id FROM users WHERE email = ? LIMIT 1', [email]);
+    if (!users.length) throw new Error('No member account was found with that email address.');
 
-        // Adjust the query table/column names based on your database schema
-        const query = 'UPDATE members SET password = ? WHERE email = ?';
-
-        db.query(query, [hashedPassword, memberEmail], (err, result) => {
-            if (err) {
-                console.error('❌ Error resetting password:', err.message);
-                process.exit(1);
-            }
-            
-            if (result.affectedRows === 0) {
-                console.log(`⚠️ No member found with email: ${memberEmail}`);
-            } else {
-                console.log(`✅ Password successfully reset for member: ${memberEmail}`);
-            }
-            process.exit(0);
-        });
-    } catch (error) {
-        console.error('❌ Password hashing failed:', error);
-        process.exit(1);
-    }
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await db.execute('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, users[0].id]);
+    console.log(`Password reset successfully for ${email}.`);
 }
 
-// Run from terminal: node reset-member-password.js user@example.com newPassword123
-const args = process.argv.slice(2);
-resetPassword(args[0], args[1]);
+main()
+    .catch((error) => {
+        console.error(`Password reset failed: ${error.message}`);
+        process.exitCode = 1;
+    })
+    .finally(() => db.end());

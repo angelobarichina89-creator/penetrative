@@ -1,2 +1,3 @@
-openai
-python-dotenv
+python-dotenv>=1.0.0
+flask>=3.0.0
+tinyfish>=0.11.0

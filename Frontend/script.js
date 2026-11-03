@@ -7,66 +7,38 @@ const STORAGE_KEYS = {
     recentlyViewed: "libraryRecent",
     notifications: "libraryNotifications",
     reports: "libraryReports",
+    purchases: "libraryPurchases",
     userRatings: "libraryUserRatings"
 };
 
 const AUTH_ACCOUNTS_KEY = "libraryAccounts";
 
-const MAX_BORROWS = 3;
-const BORROW_FEE = 10;
-const PREMIUM_PRICE = 99;
-const LOAN_DAYS = 14;
-const PREMIUM_DAYS = 30;
-
-const BUILT_IN_CREDENTIALS = { admin: "admin123", woopiiee: "Robbie" };
-function checkBuiltInPassword(username, password) {
-    return BUILT_IN_CREDENTIALS[String(username || "").toLowerCase()] === password;
-}
-
-function showToast(message) {
-    let toast = document.getElementById("appToast");
-    if (!toast) {
-        toast = document.createElement("div");
-        toast.id = "appToast";
-        toast.className = "toast";
-        toast.setAttribute("role", "status");
-        toast.setAttribute("aria-live", "polite");
-        document.body.appendChild(toast);
-    }
-    toast.textContent = message;
-    toast.classList.add("show");
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => toast.classList.remove("show"), 3200);
-}
-window.alert = message => showToast(String(message));
-
 const defaultBooks = [
-    { id: "BK-007", title: "Noli Me Tangere", author: "Jose Rizal", category: "Fiction", price: 300, year: 1887, edition: "1st", copies: 5, available: 3, shelf: "F-01", condition: "Good", description: "A novel that exposes the social cancer of the Philippines during the Spanish colonial period.", rating: 4.8, latest: "2026-10-17", image: "Images/noli-me-tangere.svg", isPremium: false },
-    { id: "BK-101", title: "Clean Codings", author: "Robert B. Stark", category: "Programming", price: 450, year: 2024, edition: "2nd", copies: 5, available: 3, shelf: "A-12", condition: "Good", description: "A handbook of agile software craftsmanship.", rating: 4.7, latest: "2024-10-05", image: "Images/clean-codings.jpg", isPremium: false },
-    { id: "BK-102", title: "The C Programming Language", author: "Xean M. Verutacio", category: "Programming", price: 300, year: 2013, edition: "1st", copies: 4, available: 2, shelf: "A-08", condition: "Fair", description: "Classic introduction to C.", rating: 4.5, latest: "2013-03-03", image: "Images/the-c-programming-language.jpg", isPremium: false },
-    { id: "BK-103", title: "Introduction to Java Programming", author: "Y. Daniel Liang", category: "Programming", price: 250, year: 2022, edition: "12th", copies: 6, available: 5, shelf: "A-15", condition: "Excellent", description: "Comprehensive Java textbook.", rating: 4.3, latest: "2026-10-17", image: "Images/introduction-to-java-programming.jpg", isPremium: false },
-    { id: "BK-104", title: "Python Crash Course", author: "Eric Banner", category: "Programming", price: 250, year: 2023, edition: "3rd", copies: 8, available: 6, shelf: "A-03", condition: "Good", description: "Hands-on Python projects.", rating: 4.8, latest: "2026-10-17", image: "Images/python-crash-course.jpg", isPremium: false },
-    { id: "BK-105", title: "Eloquent Web Design", author: "Herbert T. Pherbhert", category: "Programming", price: 250, year: 2021, edition: "1st", copies: 3, available: 1, shelf: "B-07", condition: "Good", description: "Modern web design principles.", rating: 4.1, latest: "2026-10-17", image: "Images/eloquent-web-design.jpg", isPremium: false },
-    { id: "BK-106", title: "Computer Organization and Design", author: "Robert B. Stark", category: "Computer Engineering", price: 280, year: 2020, edition: "5th", copies: 4, available: 3, shelf: "C-01", condition: "Good", description: "Hardware/software interface.", rating: 4.4, latest: "2026-10-17", image: "Images/computer-organization-and-design.jpg", isPremium: false },
-    { id: "BK-107", title: "Computer Architecture", author: "Bruce Banter", category: "Computer Engineering", price: 270, year: 2019, edition: "2nd", copies: 3, available: 2, shelf: "C-04", condition: "Fair", description: "Quantitative architecture.", rating: 4.2, latest: "2026-10-17", image: "Images/computer-architecture.jpg", isPremium: false },
-    { id: "BK-108", title: "Digital Design", author: "Dixon Nixon", category: "Computer Engineering", price: 260, year: 2021, edition: "1st", copies: 5, available: 4, shelf: "C-09", condition: "Excellent", description: "Digital logic fundamentals.", rating: 4.0, latest: "2026-10-17", image: "Images/digital-design.jpg", isPremium: false },
-    { id: "BK-109", title: "Electronics Circuits", author: "Krey Thos", category: "Computer Engineering", price: 240, year: 2018, edition: "3rd", copies: 4, available: 2, shelf: "C-11", condition: "Good", description: "Electronic circuit analysis.", rating: 3.9, latest: "2026-10-17", image: "Images/electronics-circuits.jpg", isPremium: false },
-    { id: "BK-110", title: "Embedded System", author: "Kirk Cobain", category: "Computer Engineering", price: 290, year: 2022, edition: "1st", copies: 3, available: 3, shelf: "C-14", condition: "Excellent", description: "Embedded systems design.", rating: 4.3, latest: "2026-10-17", image: "Images/embedded-system.jpg", isPremium: false },
-    { id: "BK-111", title: "Computer Networking", author: "Steve Nash", category: "Networking", price: 320, year: 2021, edition: "8th", copies: 5, available: 3, shelf: "D-02", condition: "Good", description: "Top-down networking approach.", rating: 4.6, latest: "2026-10-17", image: "Images/computer-networking.jpg", isPremium: false },
-    { id: "BK-112", title: "Network Communication", author: "Kwah Liti", category: "Networking", price: 230, year: 2020, edition: "2nd", copies: 4, available: 4, shelf: "D-05", condition: "Good", description: "Network protocols.", rating: 4.0, latest: "2026-10-17", image: "Images/network-communication.jpg", isPremium: false },
-    { id: "BK-113", title: "Introduction to Internet", author: "LeBrown Jeims", category: "Networking", price: 200, year: 2019, edition: "1st", copies: 6, available: 5, shelf: "D-08", condition: "Fair", description: "Internet basics.", rating: 3.8, latest: "2026-10-17", image: "Images/introduction-to-internet.jpg", isPremium: false },
-    { id: "BK-114", title: "Data Networking", author: "Halt and Others", category: "Networking", price: 250, year: 2022, edition: "1st", copies: 3, available: 1, shelf: "D-12", condition: "Good", description: "Data communication concepts.", rating: 4.1, latest: "2026-10-17", image: "Images/data-networking.jpg", isPremium: false },
-    { id: "BK-115", title: "TCP/IP Illustrated", author: "Walter Black", category: "Networking", price: 310, year: 2018, edition: "2nd", copies: 4, available: 2, shelf: "D-15", condition: "Good", description: "TCP/IP protocol suite.", rating: 4.5, latest: "2026-10-17", image: "Images/tcp-ip-illustrated.jpg", isPremium: false },
-    { id: "BK-116", title: "Security Engineering", author: "Robert B. Stark", category: "Cybersecurity", price: 350, year: 2020, edition: "3rd", copies: 3, available: 2, shelf: "E-01", condition: "Excellent", description: "Building secure systems.", rating: 4.7, latest: "2026-10-17", image: "Images/security-engineering.jpg", isPremium: false },
-    { id: "BK-117", title: "Hacking: The Art of Exploitation", author: "Jonathan Klied", category: "Cybersecurity", price: 280, year: 2019, edition: "2nd", copies: 4, available: 1, shelf: "E-04", condition: "Good", description: "Hands-on hacking techniques.", rating: 4.4, latest: "2026-10-17", image: "Images/hacking-the-art-of-exploitation.jpg", isPremium: false },
-    { id: "BK-118", title: "Blue Team Handbook", author: "Anna Klied", category: "Cybersecurity", price: 260, year: 2021, edition: "1st", copies: 5, available: 4, shelf: "E-07", condition: "Excellent", description: "Incident response guide.", rating: 4.2, latest: "2026-10-17", image: "Images/blue-team-handbook.jpg", isPremium: false },
-    { id: "BK-119", title: "Threat Modeling", author: "Frank Einstein", category: "Cybersecurity", price: 240, year: 2022, edition: "1st", copies: 3, available: 3, shelf: "E-10", condition: "Good", description: "Security threat modeling.", rating: 4.0, latest: "2026-10-17", image: "Images/threat-modeling.jpg", isPremium: false },
-    { id: "BK-120", title: "Introduction to Cryptography", author: "Alfred Camel", category: "Cybersecurity", price: 270, year: 2020, edition: "2nd", copies: 4, available: 2, shelf: "E-13", condition: "Good", description: "Cryptography fundamentals.", rating: 4.3, latest: "2026-10-17", image: "Images/introduction-to-cryptography.jpg", isPremium: false },
-    { id: "BK-121", title: "Hands-On Machine Learning", author: "Seiy Antis", category: "AI and Data Science", price: 380, year: 2022, edition: "3rd", copies: 5, available: 3, shelf: "F-02", condition: "Excellent", description: "Practical ML with Python.", rating: 4.8, latest: "2026-10-17", image: "Images/hands-on-machine-learning.jpg", isPremium: false },
-    { id: "BK-122", title: "Deep Learning", author: "Magnus Nakamura", category: "AI and Data Science", price: 400, year: 2021, edition: "1st", copies: 3, available: 1, shelf: "F-05", condition: "Good", description: "Deep learning introduction.", rating: 4.6, latest: "2026-10-17", image: "Images/deep-learning.jpg", isPremium: false },
-    { id: "BK-123", title: "Artificial Intelligence: A Modern Approach", author: "Robert B. Stark", category: "AI and Data Science", price: 420, year: 2020, edition: "4th", copies: 4, available: 2, shelf: "F-08", condition: "Excellent", description: "The definitive AI textbook.", rating: 4.9, latest: "2026-10-17", image: "Images/artificial-intelligence-a-modern-approach.jpg", isPremium: false },
-    { id: "BK-124", title: "Python for Machine Learning", author: "Hadji Glitch", category: "AI and Data Science", price: 290, year: 2023, edition: "2nd", copies: 6, available: 5, shelf: "F-11", condition: "Good", description: "ML projects with Python.", rating: 4.4, latest: "2026-10-17", image: "Images/python-for-machine-learning.jpg", isPremium: false },
-    { id: "BK-125", title: "Data Science from Scratch", author: "Kirk Cobain", category: "AI and Data Science", price: 310, year: 2019, edition: "2nd", copies: 4, available: 3, shelf: "F-14", condition: "Good", description: "Data science fundamentals.", rating: 4.5, latest: "2026-10-17", image: "Images/data-science-from-scratch.jpg", isPremium: false }
+    { id: "BK-101", title: "Clean Codings", author: "Robert B. Stark", category: "Programming", price: 450, year: 2024, edition: "2nd", copies: 5, available: 3, shelf: "A-12", condition: "Good", description: "A handbook of agile software craftsmanship.", rating: 4.7, latest: "2024-10-05", image: "images/clean-codings.jpg", isPremium: false },
+    { id: "BK-102", title: "The C Programming Language", author: "Xean M. Verutacio", category: "Programming", price: 300, year: 2013, edition: "1st", copies: 4, available: 2, shelf: "A-08", condition: "Fair", description: "Classic introduction to C.", rating: 4.5, latest: "2013-03-03", image: "images/the-c-programming-language.jpg", isPremium: false },
+    { id: "BK-103", title: "Introduction to Java Programming", author: "Y. Daniel Liang", category: "Programming", price: 250, year: 2022, edition: "12th", copies: 6, available: 5, shelf: "A-15", condition: "Excellent", description: "Comprehensive Java textbook.", rating: 4.3, latest: "2026-10-17", image: "images/introduction-to-java-programming.jpg", isPremium: false },
+    { id: "BK-104", title: "Python Crash Course", author: "Eric Banner", category: "Programming", price: 250, year: 2023, edition: "3rd", copies: 8, available: 6, shelf: "A-03", condition: "Good", description: "Hands-on Python projects.", rating: 4.8, latest: "2026-10-17", image: "images/python-crash-course.jpg", isPremium: false },
+    { id: "BK-105", title: "Eloquent Web Design", author: "Herbert T. Pherbhert", category: "Programming", price: 250, year: 2021, edition: "1st", copies: 3, available: 1, shelf: "B-07", condition: "Good", description: "Modern web design principles.", rating: 4.1, latest: "2026-10-17", image: "images/eloquent-web-design.jpg", isPremium: false },
+    { id: "BK-106", title: "Computer Organization and Design", author: "Robert B. Stark", category: "Computer Engineering", price: 280, year: 2020, edition: "5th", copies: 4, available: 3, shelf: "C-01", condition: "Good", description: "Hardware/software interface.", rating: 4.4, latest: "2026-10-17", image: "images/computer-organization-and-design.jpg", isPremium: false },
+    { id: "BK-107", title: "Computer Architecture", author: "Bruce Banter", category: "Computer Engineering", price: 270, year: 2019, edition: "2nd", copies: 3, available: 2, shelf: "C-04", condition: "Fair", description: "Quantitative architecture.", rating: 4.2, latest: "2026-10-17", image: "images/computer-architecture.jpg", isPremium: false },
+    { id: "BK-108", title: "Digital Design", author: "Dixon Nixon", category: "Computer Engineering", price: 260, year: 2021, edition: "1st", copies: 5, available: 4, shelf: "C-09", condition: "Excellent", description: "Digital logic fundamentals.", rating: 4.0, latest: "2026-10-17", image: "images/digital-design.jpg", isPremium: false },
+    { id: "BK-109", title: "Electronics Circuits", author: "Krey Thos", category: "Computer Engineering", price: 240, year: 2018, edition: "3rd", copies: 4, available: 2, shelf: "C-11", condition: "Good", description: "Electronic circuit analysis.", rating: 3.9, latest: "2026-10-17", image: "images/electronics-circuits.jpg", isPremium: false },
+    { id: "BK-110", title: "Embedded System", author: "Kirk Cobain", category: "Computer Engineering", price: 290, year: 2022, edition: "1st", copies: 3, available: 3, shelf: "C-14", condition: "Excellent", description: "Embedded systems design.", rating: 4.3, latest: "2026-10-17", image: "images/embedded-system.jpg", isPremium: false },
+    { id: "BK-111", title: "Computer Networking", author: "Steve Nash", category: "Networking", price: 320, year: 2021, edition: "8th", copies: 5, available: 3, shelf: "D-02", condition: "Good", description: "Top-down networking approach.", rating: 4.6, latest: "2026-10-17", image: "images/computer-networking.jpg", isPremium: false },
+    { id: "BK-112", title: "Network Communication", author: "Kwah Liti", category: "Networking", price: 230, year: 2020, edition: "2nd", copies: 4, available: 4, shelf: "D-05", condition: "Good", description: "Network protocols.", rating: 4.0, latest: "2026-10-17", image: "images/network-communication.jpg", isPremium: false },
+    { id: "BK-113", title: "Introduction to Internet", author: "LeBrown Jeims", category: "Networking", price: 200, year: 2019, edition: "1st", copies: 6, available: 5, shelf: "D-08", condition: "Fair", description: "Internet basics.", rating: 3.8, latest: "2026-10-17", image: "images/introduction-to-internet.jpg", isPremium: false },
+    { id: "BK-114", title: "Data Networking", author: "Halt and Others", category: "Networking", price: 250, year: 2022, edition: "1st", copies: 3, available: 1, shelf: "D-12", condition: "Good", description: "Data communication concepts.", rating: 4.1, latest: "2026-10-17", image: "images/data-networking.jpg", isPremium: false },
+    { id: "BK-115", title: "TCP/IP Illustrated", author: "Walter Black", category: "Networking", price: 310, year: 2018, edition: "2nd", copies: 4, available: 2, shelf: "D-15", condition: "Good", description: "TCP/IP protocol suite.", rating: 4.5, latest: "2026-10-17", image: "images/tcp-ip-illustrated.jpg", isPremium: false },
+    { id: "BK-116", title: "Security Engineering", author: "Robert B. Stark", category: "Cybersecurity", price: 350, year: 2020, edition: "3rd", copies: 3, available: 2, shelf: "E-01", condition: "Excellent", description: "Building secure systems.", rating: 4.7, latest: "2026-10-17", image: "images/security-engineering.jpg", isPremium: false },
+    { id: "BK-117", title: "Hacking: The Art of Exploitation", author: "Jonathan Klied", category: "Cybersecurity", price: 280, year: 2019, edition: "2nd", copies: 4, available: 1, shelf: "E-04", condition: "Good", description: "Hands-on hacking techniques.", rating: 4.4, latest: "2026-10-17", image: "images/hacking-the-art-of-exploitation.jpg", isPremium: false },
+    { id: "BK-118", title: "Blue Team Handbook", author: "Anna Klied", category: "Cybersecurity", price: 260, year: 2021, edition: "1st", copies: 5, available: 4, shelf: "E-07", condition: "Excellent", description: "Incident response guide.", rating: 4.2, latest: "2026-10-17", image: "images/blue-team-handbook.jpg", isPremium: false },
+    { id: "BK-119", title: "Threat Modeling", author: "Frank Einstein", category: "Cybersecurity", price: 240, year: 2022, edition: "1st", copies: 3, available: 3, shelf: "E-10", condition: "Good", description: "Security threat modeling.", rating: 4.0, latest: "2026-10-17", image: "images/threat-modeling.jpg", isPremium: false },
+    { id: "BK-120", title: "Introduction to Cryptography", author: "Alfred Camel", category: "Cybersecurity", price: 270, year: 2020, edition: "2nd", copies: 4, available: 2, shelf: "E-13", condition: "Good", description: "Cryptography fundamentals.", rating: 4.3, latest: "2026-10-17", image: "images/introduction-to-cryptography.jpg", isPremium: false },
+    { id: "BK-121", title: "Hands-On Machine Learning", author: "Seiy Antis", category: "AI and Data Science", price: 380, year: 2022, edition: "3rd", copies: 5, available: 3, shelf: "F-02", condition: "Excellent", description: "Practical ML with Python.", rating: 4.8, latest: "2026-10-17", image: "images/hands-on-machine-learning.jpg", isPremium: false },
+    { id: "BK-122", title: "Deep Learning", author: "Magnus Nakamura", category: "AI and Data Science", price: 400, year: 2021, edition: "1st", copies: 3, available: 1, shelf: "F-05", condition: "Good", description: "Deep learning introduction.", rating: 4.6, latest: "2026-10-17", image: "images/deep-learning.jpg", isPremium: false },
+    { id: "BK-123", title: "Artificial Intelligence: A Modern Approach", author: "Robert B. Stark", category: "AI and Data Science", price: 420, year: 2020, edition: "4th", copies: 4, available: 2, shelf: "F-08", condition: "Excellent", description: "The definitive AI textbook.", rating: 4.9, latest: "2026-10-17", image: "images/artificial-intelligence-a-modern-approach.jpg", isPremium: false },
+    { id: "BK-124", title: "Python for Machine Learning", author: "Hadji Glitch", category: "AI and Data Science", price: 290, year: 2023, edition: "2nd", copies: 6, available: 5, shelf: "F-11", condition: "Good", description: "ML projects with Python.", rating: 4.4, latest: "2026-10-17", image: "images/python-for-machine-learning.jpg", isPremium: false },
+    { id: "BK-125", title: "Data Science from Scratch", author: "Kirk Cobain", category: "AI and Data Science", price: 310, year: 2019, edition: "2nd", copies: 4, available: 3, shelf: "F-14", condition: "Good", description: "Data science fundamentals.", rating: 4.5, latest: "2026-10-17", image: "images/data-science-from-scratch.jpg", isPremium: false }
 ];
 
 const premiumTopics = ["Programming", "Computer Engineering", "Networking", "Cybersecurity", "AI and Data Science"];
@@ -89,7 +61,7 @@ for (let i = 1; i <= 75; i++) {
         description: `Exclusive VIP Premium book covering expert-level concepts in ${topic}.`,
         rating: 5.0,
         latest: "2026-10-17",
-        image: `Images/premium-book-${String(i).padStart(3, "0")}.jpg`,
+        image: `images/premium-book-${String(i).padStart(3, "0")}.jpg`,
         isPremium: true
     });
 }
@@ -107,18 +79,19 @@ function readJSON(key, fallback) {
 
 let books = (() => {
     const saved = readJSON(STORAGE_KEYS.books, null);
-    const list = Array.isArray(saved) ? saved : defaultBooks.map(b => ({ ...b }));
-    const defaultsById = Object.fromEntries(defaultBooks.map(b => [b.id, b]));
+    const baseList = Array.isArray(saved) && saved.length ? saved : defaultBooks.map(b => ({ ...b }));
+    const mergedById = new Map();
 
-    const deletedDefaults = readJSON("libraryDeletedDefaults", []);
-    const have = new Set(list.map(b => b.id));
-    const missingPremium = defaultBooks
-        .filter(b => b.isPremium && !have.has(b.id) && !deletedDefaults.includes(b.id))
-        .map(b => ({ ...b }));
-    list.push(...missingPremium);
+    baseList.forEach(book => {
+        if (book && book.id) mergedById.set(book.id, book);
+    });
 
-    return list.map(b => {
-        const base = defaultsById[b.id] || {};
+    defaultBooks.forEach(book => {
+        if (!mergedById.has(book.id)) mergedById.set(book.id, { ...book });
+    });
+
+    return [...mergedById.values()].map(b => {
+        const base = defaultBooks.find(item => item.id === b.id) || {};
         const merged = {
             copies: 3,
             available: 2,
@@ -133,15 +106,19 @@ let books = (() => {
             ...base,
             ...b
         };
-        if (defaultsById[b.id] && /^images\//i.test(b.image || "")) {
-            merged.image = base.image;
-        }
         if (!merged.shelf || merged.shelf === "A-01") merged.shelf = base.shelf || merged.shelf;
         if (!merged.year || merged.year === 2020) merged.year = base.year || merged.year;
         if (merged.rating == null) merged.rating = base.rating ?? merged.rating;
         if (!merged.description || merged.description.length < 5) merged.description = base.description || merged.description;
         if (merged.copies == null) merged.copies = base.copies ?? 3;
         if (merged.available == null) merged.available = base.available ?? 2;
+        if (
+            base.image &&
+            (/^image\/cover\/BK-\d+\.jpg$/i.test(merged.image || "") ||
+                /^images\/no-cover\.jpg$/i.test(merged.image || ""))
+        ) {
+            merged.image = base.image;
+        }
         return merged;
     });
 })();
@@ -167,6 +144,9 @@ let sales = Object.assign({}, defaultSales, readJSON(STORAGE_KEYS.sales, {}));
 let borrows = readJSON(STORAGE_KEYS.borrows, []);
 if (!Array.isArray(borrows)) borrows = [];
 
+let purchases = readJSON(STORAGE_KEYS.purchases, []);
+if (!Array.isArray(purchases)) purchases = [];
+
 let reports = readJSON(STORAGE_KEYS.reports, []);
 if (!Array.isArray(reports)) reports = [];
 
@@ -188,6 +168,8 @@ let currentRatingBookId = null;
 let selectedRatingStars = 5;
 let reportingTargetType = null;
 let reportingTargetId = null;
+let aiChatHistory = [];
+let aiAssistantBusy = false;
 
 const pages = document.querySelectorAll(".page");
 const navItems = document.querySelectorAll(".side-nav-item[data-page]");
@@ -198,22 +180,63 @@ const signupForm = document.getElementById("signupForm");
 const loginError = document.getElementById("loginError");
 const signupError = document.getElementById("signupError");
 
+function isUsernameInput(input) {
+    return input instanceof HTMLInputElement && input.matches("#username, #signupUsername, #settingsUsername, #recoveryUsername, #friendUsernameInput");
+}
+
+function isPersonNameInput(input) {
+    return input instanceof HTMLInputElement && input.matches("#signupPenName, #settingsPenName");
+}
+
+function hasInvalidPasswordCharacters(value) {
+    return /[^\p{L}\p{M}\p{N}_@#?!-]/u.test(value);
+}
+
+function hasInvalidUsernameCharacters(value) {
+    return /[^\p{L}\p{M}]/u.test(value);
+}
+
+document.addEventListener("keydown", event => {
+    if (event.target instanceof HTMLInputElement && event.target.type === "password" && event.key.length === 1 && hasInvalidPasswordCharacters(event.key)) event.preventDefault();
+    if (isUsernameInput(event.target) && event.key.length === 1 && /[^\p{L}\p{M}]/u.test(event.key)) event.preventDefault();
+    if (isPersonNameInput(event.target) && /^\p{N}$/u.test(event.key)) event.preventDefault();
+});
+
+document.addEventListener("beforeinput", event => {
+    if (!(event.target instanceof HTMLInputElement)) return;
+    if (event.target.type === "password" && hasInvalidPasswordCharacters(event.data || "")) event.preventDefault();
+    if (isUsernameInput(event.target) && /[^\p{L}\p{M}]/u.test(event.data || "")) event.preventDefault();
+    if (isPersonNameInput(event.target) && /\p{N}/u.test(event.data || "")) event.preventDefault();
+});
+
+document.addEventListener("input", event => {
+    if (!(event.target instanceof HTMLInputElement)) return;
+    const input = event.target;
+    const isPassword = input.type === "password";
+    const isUsername = isUsernameInput(input);
+    const isPersonName = isPersonNameInput(input);
+    if (!isPassword && !isUsername && !isPersonName) return;
+    const pattern = isPassword ? /[^\p{L}\p{M}\p{N}_@#?!-]/gu : isUsername ? /[^\p{L}\p{M}]/gu : /\p{N}/gu;
+    const value = input.value;
+    const cursor = input.selectionStart ?? value.length;
+    const clean = value.replace(pattern, "");
+    if (clean === value) return;
+    input.value = clean;
+    const cleanCursor = value.slice(0, cursor).replace(pattern, "").length;
+    input.setSelectionRange(cleanCursor, cleanCursor);
+});
+
 function showAuthForm(formName) {
     const isSignup = formName === "signup";
-    const isForgot = formName === "forgot";
-    const forgotForm = document.getElementById("forgotForm");
 
-    loginForm?.classList.toggle("hidden", isSignup || isForgot);
+    loginForm?.classList.toggle("hidden", isSignup);
     signupForm?.classList.toggle("hidden", !isSignup);
-    forgotForm?.classList.toggle("hidden", !isForgot);
-
-    if (isForgot) resetForgotForm();
 
     const title = document.getElementById("authTitle");
     const subtitle = document.getElementById("authSubtitle");
 
-    if (title) title.textContent = isSignup ? "Create Account" : isForgot ? "Forgot Password" : "Library Login";
-    if (subtitle) subtitle.textContent = isSignup ? "Choose how you want to join" : isForgot ? "Answer your recovery question to reset it" : "Sign in to manage your library";
+    if (title) title.textContent = isSignup ? "Create Account" : "Library Login";
+    if (subtitle) subtitle.textContent = isSignup ? "Choose how you want to join" : "Sign in to manage your library";
 
     updateSignupType();
 
@@ -264,31 +287,6 @@ function generatePasswordSalt() {
         crypto.getRandomValues(new Uint8Array(16)),
         byte => byte.toString(16).padStart(2, "0")
     ).join("");
-}
-
-function initPasswordVisibilityToggles() {
-    document.querySelectorAll('input[type="password"]').forEach(input => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "password-input-wrapper";
-        input.parentNode.insertBefore(wrapper, input);
-        wrapper.appendChild(input);
-
-        const toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.className = "password-toggle";
-        toggle.textContent = "Show";
-        toggle.setAttribute("aria-label", "Show password");
-        toggle.setAttribute("aria-controls", input.id);
-        toggle.setAttribute("aria-pressed", "false");
-        toggle.addEventListener("click", () => {
-            const isVisible = input.type === "password";
-            input.type = isVisible ? "text" : "password";
-            toggle.textContent = isVisible ? "Hide" : "Show";
-            toggle.setAttribute("aria-label", `${isVisible ? "Hide" : "Show"} password`);
-            toggle.setAttribute("aria-pressed", String(isVisible));
-        });
-        wrapper.appendChild(toggle);
-    });
 }
 
 function isAdmin(username) {
@@ -343,9 +341,7 @@ function getCurrentAccount() {
 function isUserPremium(username) {
     if (["admin", "woopiiee"].includes(String(username || "").toLowerCase())) return true;
     const acc = getSavedAccounts().find(item => item.username?.toLowerCase() === String(username || "").toLowerCase());
-    if (acc?.membership !== "premium" || acc?.banned) return false;
-    if (acc.premiumUntil && acc.premiumUntil < today()) return false;
-    return true;
+    return acc?.membership === "premium" && !acc?.banned;
 }
 
 function setAuthenticated(isAuth, username = "") {
@@ -396,6 +392,11 @@ async function handleLogin(event) {
     const username = document.getElementById("username")?.value.trim() || "";
     const password = document.getElementById("password")?.value || "";
 
+    if (hasInvalidUsernameCharacters(username)) {
+        if (loginError) loginError.textContent = "Username can only contain letters.";
+        return;
+    }
+
     const accounts = getSavedAccounts();
     const savedAccount = accounts.find(
         account => account.username?.toLowerCase() === username.toLowerCase()
@@ -409,7 +410,8 @@ async function handleLogin(event) {
     }
 
     let valid =
-        checkBuiltInPassword(username, password);
+        (username.toLowerCase() === "admin" && password === "admin123") ||
+        (username.toLowerCase() === "woopiiee" && password === "Robbie");
 
     if (!valid && savedAccount) {
         try {
@@ -444,10 +446,11 @@ async function handleSignup(event) {
     event.preventDefault();
 
     const usernameInput = document.getElementById("signupUsername");
+    const emailInput = document.getElementById("signupEmail");
     const passwordInput = document.getElementById("signupPassword");
     const confirmInput = document.getElementById("signupPasswordConfirm");
 
-    if (!usernameInput || !passwordInput || !confirmInput || !signupError) return;
+    if (!usernameInput || !emailInput || !passwordInput || !confirmInput || !signupError) return;
 
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
@@ -461,8 +464,8 @@ async function handleSignup(event) {
         return;
     }
 
-    if (/\d/.test(username)) {
-        signupError.textContent = "Username cannot contain numbers.";
+    if (hasInvalidUsernameCharacters(username)) {
+        signupError.textContent = "Username can only contain letters.";
         return;
     }
 
@@ -479,21 +482,13 @@ async function handleSignup(event) {
         return;
     }
 
-    if (/\s/.test(password)) {
-        signupError.textContent = "Password cannot contain spaces.";
+    if (hasInvalidPasswordCharacters(password) || hasInvalidPasswordCharacters(confirmInput.value)) {
+        signupError.textContent = "Password may only include letters, numbers, and _ @ - # ? !.";
         return;
     }
 
     if (password !== confirmInput.value) {
         signupError.textContent = "Passwords do not match.";
-        return;
-    }
-
-    const recoveryQuestion = document.getElementById("signupRecoveryQuestion")?.value || "";
-    const recoveryAnswer = normalizeRecoveryAnswer(document.getElementById("signupRecoveryAnswer")?.value);
-
-    if (!recoveryQuestion || recoveryAnswer.length < 2) {
-        signupError.textContent = "Pick a recovery question and type an answer (needed if you forget your password).";
         return;
     }
 
@@ -510,16 +505,12 @@ async function handleSignup(event) {
 
         const salt = generatePasswordSalt();
         const passwordHash = await hashPassword(password, salt);
-        const recoverySalt = generatePasswordSalt();
-        const recoveryAnswerHash = await hashPassword(recoveryAnswer, recoverySalt);
 
         accounts.push({
             username,
+            email: emailInput?.value.trim() || "",
             passwordHash,
             salt,
-            recoveryQuestion,
-            recoverySalt,
-            recoveryAnswerHash,
             role: "user",
             membership: "regular",
             banned: false,
@@ -538,12 +529,102 @@ async function handleSignup(event) {
 
         if (loginError) {
             loginError.textContent = isAuthorApplication
-                ? "Author application sent! You are already listed in the Authors section. Log in as a reader now while an admin reviews your application."
+                ? "Author application sent! Log in as a reader now. An admin will review your application."
                 : "Account created. Please log in.";
         }
     } catch (error) {
         signupError.textContent = error.message;
     }
+}
+
+function openForgotPasswordModal() {
+    const modal = document.getElementById("forgotPasswordModal");
+    if (!modal) return;
+    document.getElementById("recoveryUsername").value = document.getElementById("username")?.value || "";
+    document.getElementById("recoveryPasswordError").textContent = "";
+    modal.classList.remove("hidden");
+    requestAnimationFrame(() => {
+        modal.classList.add("show");
+        document.getElementById("recoveryUsername")?.focus();
+    });
+}
+
+function closeForgotPasswordModal() {
+    const modal = document.getElementById("forgotPasswordModal");
+    if (!modal) return;
+    modal.classList.remove("show");
+    window.setTimeout(() => modal.classList.add("hidden"), 300);
+}
+
+async function resetForgottenPassword(event) {
+    event.preventDefault();
+    const username = document.getElementById("recoveryUsername")?.value.trim() || "";
+    const email = document.getElementById("recoveryEmail")?.value.trim().toLowerCase() || "";
+    const password = document.getElementById("recoveryNewPassword")?.value || "";
+    const confirmation = document.getElementById("recoveryConfirmPassword")?.value || "";
+    const error = document.getElementById("recoveryPasswordError");
+    if (error) error.textContent = "";
+
+    if (hasInvalidPasswordCharacters(password) || hasInvalidPasswordCharacters(confirmation)) {
+        if (error) error.textContent = "Password may only include letters, numbers, and _ @ - # ? !.";
+        return;
+    }
+    if (password.length < 8) {
+        if (error) error.textContent = "Password must be at least 8 characters.";
+        return;
+    }
+    if (password !== confirmation) {
+        if (error) error.textContent = "Passwords do not match.";
+        return;
+    }
+
+    const accounts = getSavedAccounts();
+    const account = accounts.find(item => sameUser(item.username, username));
+    if (!account || !account.email || account.email.trim().toLowerCase() !== email || isBuiltInAdmin(username)) {
+        if (error) error.textContent = "We couldn't verify that username and email. Check the account details or contact library support.";
+        return;
+    }
+
+    try {
+        const salt = generatePasswordSalt();
+        account.passwordHash = await hashPassword(password, salt);
+        account.salt = salt;
+        localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
+        document.getElementById("forgotPasswordForm")?.reset();
+        closeForgotPasswordModal();
+        if (loginError) loginError.textContent = "Password reset. Sign in with your new password.";
+    } catch (resetError) {
+        if (error) error.textContent = resetError.message || "Could not reset the password.";
+    }
+}
+
+let signOutModalOpener = null;
+
+function openSignOutModal() {
+    const modal = document.getElementById("signOutModal");
+    if (!modal) return;
+    signOutModalOpener = document.activeElement;
+    modal.classList.remove("hidden");
+    requestAnimationFrame(() => {
+        modal.classList.add("show");
+        document.getElementById("cancelSignOutButton")?.focus();
+    });
+}
+
+function closeSignOutModal(restoreFocus = true) {
+    const modal = document.getElementById("signOutModal");
+    if (!modal) return;
+    modal.classList.remove("show");
+    window.setTimeout(() => {
+        modal.classList.add("hidden");
+        if (restoreFocus && signOutModalOpener?.isConnected) signOutModalOpener.focus();
+        signOutModalOpener = null;
+    }, 250);
+}
+
+function confirmSignOut() {
+    closeSignOutModal(false);
+    handleLogout();
 }
 
 function handleLogout() {
@@ -564,6 +645,7 @@ function saveLibraryData() {
         [STORAGE_KEYS.cart, cartByUser],
         [STORAGE_KEYS.sales, sales],
         [STORAGE_KEYS.borrows, borrows],
+        [STORAGE_KEYS.purchases, purchases],
         [STORAGE_KEYS.favorites, favoritesByUser],
         [STORAGE_KEYS.recentlyViewed, recentByUser],
         [STORAGE_KEYS.notifications, notifications],
@@ -624,6 +706,67 @@ function isOverdue(date) {
     return date < today();
 }
 
+const ADMIN_AUDIT_KEY = "libraryAdminAuditTrail";
+const OVERDUE_SETTINGS_KEY = "libraryOverdueSettings";
+const DEFAULT_OVERDUE_RATE = 10;
+
+function getOverdueRate() {
+    const settings = readJSON(OVERDUE_SETTINGS_KEY, {});
+    return Math.max(0, Number(settings.penaltyPerDay ?? DEFAULT_OVERDUE_RATE) || 0);
+}
+
+function getDaysLate(dueDate, referenceDate = today()) {
+    if (!dueDate || dueDate >= referenceDate) return 0;
+    const due = new Date(`${dueDate}T00:00:00Z`);
+    const reference = new Date(`${referenceDate}T00:00:00Z`);
+    return Math.max(0, Math.floor((reference - due) / 86400000));
+}
+
+function notifyCurrentUserOverdueLoans() {
+    if (!currentUser) return;
+    borrows.filter(loan => sameUser(loan.username, currentUser) && !loan.returned && isOverdue(loan.dueDate) && !loan.overdueNoticeSent).forEach(loan => {
+        const days = getDaysLate(loan.dueDate);
+        loan.overdueNoticeSent = true;
+        addNotification("Overdue book reminder", `"${loan.title || loan.id}" is ${days} day(s) overdue. Estimated penalty: ${formatCurrency(days * getOverdueRate())}. Please return it.`);
+    });
+}
+
+function recordAdminAction(action, details) {
+    if (!currentUser || !isLibrarianOrAdmin(currentUser)) return;
+    const entries = readJSON(ADMIN_AUDIT_KEY, []);
+    entries.unshift({ timestamp: new Date().toISOString(), account: currentUser, action, details });
+    try { localStorage.setItem(ADMIN_AUDIT_KEY, JSON.stringify(entries.slice(0, 500))); } catch {}
+}
+
+function recordAuditEvent(action, details, account = currentUser) {
+    if (!account) return;
+    const entries = readJSON(ADMIN_AUDIT_KEY, []);
+    entries.unshift({ timestamp: new Date().toISOString(), account, action, details });
+    try { localStorage.setItem(ADMIN_AUDIT_KEY, JSON.stringify(entries.slice(0, 500))); } catch {}
+}
+
+function saveOverdueSettings() {
+    if (!isLibrarianOrAdmin(currentUser)) return;
+    const input = document.getElementById("overduePenaltyRate");
+    const rate = Math.max(0, Number(input?.value) || 0);
+    localStorage.setItem(OVERDUE_SETTINGS_KEY, JSON.stringify({ penaltyPerDay: rate }));
+    recordAdminAction("Updated overdue penalty", `Set penalty to ${formatCurrency(rate)} per day.`);
+    renderAdminPage();
+}
+
+function exportAdminReport() {
+    if (!isLibrarianOrAdmin(currentUser)) return;
+    const audit = readJSON(ADMIN_AUDIT_KEY, []);
+    const rows = [["Section", "Date", "Account", "Action", "Details"],
+        ...borrows.map(loan => ["Loan", loan.borrowedOn || "", loan.username || "", loan.returned ? "Returned" : isOverdue(loan.dueDate) ? "Overdue" : "Active", `${loan.title || loan.id}; due ${loan.dueDate || "—"}; days late ${getDaysLate(loan.dueDate)}; estimated penalty ${formatCurrency(getDaysLate(loan.dueDate) * getOverdueRate())}`]),
+        ...audit.map(item => ["Audit", item.timestamp || "", item.account || "", item.action || "", item.details || ""])];
+    const csv = rows.map(row => row.map(value => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url; link.download = `penetrative-library-admin-report-${today()}.csv`;
+    link.click(); URL.revokeObjectURL(url);
+}
+
 function sameUser(a, b) {
     return String(a || "").toLowerCase() === String(b || "").toLowerCase();
 }
@@ -652,14 +795,6 @@ function addNotification(title, message) {
         read: !document.getElementById("notifDropdown")?.classList.contains("hidden")
     });
 
-    saveLibraryData();
-    renderNotifications();
-}
-
-function clearAllNotifications() {
-    if (!notifications.length) return;
-    if (!confirm("Clear all notifications?")) return;
-    notifications = [];
     saveLibraryData();
     renderNotifications();
 }
@@ -714,16 +849,17 @@ function showPage(name) {
         books: "Books Catalog",
         authors: "Authors Directory",
         borrow: "Borrow & Return",
+        yourBooks: "Your Books",
         cart: "Cart",
         search: "Search",
+        aiAssistant: "AI Assistant",
         profile: "Profile",
         settings: "Settings",
         myBooks: "My Books",
         messages: "Messages",
         techSupport: "Tech Support",
         support: "Support Inbox",
-        admin: "Admin",
-        rewards: "Rewards & Games"
+        admin: "Admin"
     };
 
     const subtitles = {
@@ -731,16 +867,17 @@ function showPage(name) {
         books: "Browse and borrow books",
         authors: "Author directory",
         borrow: "Max 3 books • 14 days • ₱10 borrow fee",
+        yourBooks: "Your borrowed and purchased books",
         cart: "Your purchases",
         search: "Advanced filters",
+        aiAssistant: "Book recommendations and reading help",
         profile: "Your account",
         settings: "Manage account preferences",
         myBooks: "Upload and manage your books",
         messages: "Friends & private chat",
         techSupport: "Help center & live chat",
         support: "Chat with members",
-        admin: "Admin tools",
-        rewards: "Badges, challenges and mini games"
+        admin: "Admin tools"
     };
 
     const titleElement = document.getElementById("pageTitle");
@@ -754,7 +891,211 @@ function showPage(name) {
     if (name === "support") renderSupportPage(true);
     if (name === "messages") renderMessagesPage(true);
     if (name === "techSupport") renderTechSupportPage();
+    if (name === "aiAssistant") document.getElementById("aiChatInput")?.focus();
 }
+
+function isBookOwnedOrBorrowed(book) {
+    if (!book || !currentUser) return false;
+    if (book.isPremium && !isUserPremium(currentUser)) return false;
+    const borrowed = getUserBorrows().some(loan => loan.id === book.id);
+    const bought = purchases.some(order => sameUser(order.username, currentUser) && order.id === book.id);
+    return borrowed || bought;
+}
+
+function hasPurchasedBook(bookId, username = currentUser) {
+    return !!username && purchases.some(order => sameUser(order.username, username) && order.id === bookId);
+}
+
+function renderYourBooksPage() {
+    const grid = document.getElementById("yourBooksGrid");
+    if (!grid) return;
+    const byId = new Map();
+    getUserBorrows().forEach(loan => byId.set(loan.id, { id: loan.id, borrowed: true, purchased: false }));
+    purchases.filter(order => sameUser(order.username, currentUser)).forEach(order => {
+        const entry = byId.get(order.id) || { id: order.id, borrowed: false, purchased: false };
+        entry.purchased = true;
+        byId.set(order.id, entry);
+    });
+    const entries = [...byId.values()].map(entry => ({ ...entry, book: books.find(book => book.id === entry.id) })).filter(entry => entry.book);
+    grid.innerHTML = entries.length ? entries.map(({ book, borrowed, purchased }) => `
+        <article class="owned-book-card">
+            <div class="owned-book-cover">${hasRealPicture(book.image) ? `<img src="${escapeHTML(book.image)}" alt="${escapeHTML(book.title)} cover" onerror="this.remove()">` : '<span aria-hidden="true">📖</span>'}</div>
+            <div class="owned-book-info"><span class="owned-book-status">${borrowed && purchased ? "Owned · On loan" : borrowed ? "Currently borrowed" : "Purchased"}</span>
+                <h3>${escapeHTML(book.title)}</h3><p>By ${escapeHTML(book.author || "Unknown author")}</p>
+                <button type="button" class="primary-btn" onclick="openReader('${escapeHTML(book.id)}')">Read book</button>
+            </div>
+        </article>`).join("") : '<div class="owned-books-empty"><span>📚</span><h3>Your shelf is waiting</h3><p>Books you borrow or buy will show up here for easy reading.</p><button class="primary-btn" type="button" onclick="showPage(\'books\')">Browse books</button></div>';
+}
+
+function getReadableBookPages(book) {
+    const supplied = Array.isArray(book.pages) ? book.pages.map(page => typeof page === "string" ? page : page?.content).filter(page => typeof page === "string" && page.trim()) : [];
+    if (supplied.length) return { pages: supplied, demo: false };
+    const title = book.title || "Untitled Book";
+    const author = book.author || "Unknown author";
+    const category = book.category || "General";
+    const description = book.description || `An introduction to ${title} and its place in the ${category} collection.`;
+    const subject = title.replace(/\s+Vol\.\s*\d+$/i, "");
+    const guidance = /programming|software/i.test(category)
+        ? { lens: "software as a set of small, explicit decisions", idea: "A useful program starts with a clear problem, names its inputs and expected results, and turns the work into steps that can be checked.", method: "Write a small example first. Trace each value through the steps, test one ordinary case and one boundary case, then improve the design without changing the result.", scenario: "Imagine a teammate must understand the code months from now. Clear names, focused functions, and a short explanation of why a choice was made can save more time than a clever shortcut.", exercise: "Choose one task from your own routine. Describe its input, output, and three steps before writing any code." }
+        : /computer engineering|electronics|hardware|embedded/i.test(category)
+            ? { lens: "the relationship between physical components and the instructions that control them", idea: "A computing system is easier to understand when its parts are followed from input to processing to output. Each connection carries a signal, a value, or a timing requirement.", method: "Draw the components and their connections, label what each signal means, then trace one complete operation. Check power, timing, and edge cases before changing the design.", scenario: "A sensor can report a value correctly while the device still behaves badly: a slow update, noisy connection, or mismatched voltage may distort the result. The whole path matters.", exercise: "Sketch a device you use. Mark its input, processing unit, storage or communication path, and output." }
+            : /network|internet|communication/i.test(category)
+                ? { lens: "how information travels across connected systems", idea: "A network exchange depends on more than a message: endpoints need an agreed format, a route, and a way to notice delay or failure.", method: "Follow a request from sender to receiver. At each step ask what is addressed, what is carried, what can be delayed, and how the sender learns whether delivery worked.", scenario: "When a service feels slow, the cause may be the device, local connection, route, server, or response size. Measuring each segment helps replace guessing with evidence.", exercise: "Map the journey from entering a website address to seeing its page. Note three places where a request could stall." }
+                : /cyber|security|cryptography/i.test(category)
+                    ? { lens: "protecting people, information, and systems under realistic conditions", idea: "Security begins by identifying what needs protection, who might affect it, and what harm a failure could cause. Controls work best when they address a specific risk.", method: "List the important assets, sketch likely threats, estimate impact and likelihood, then choose a safeguard. Revisit the plan whenever the system or its users change.", scenario: "A strong password helps, but a convincing message can still trick someone into giving away access. Layered defenses reduce the chance that one mistake becomes a serious incident.", exercise: "Pick an account or device. Name one valuable asset, one plausible threat, and two practical safeguards." }
+                    : /ai|data science|machine learning/i.test(category)
+                        ? { lens: "turning data into conclusions that can be checked", idea: "A model or analysis is only as useful as the question, the data, and the assumptions behind it. A confident result can still be misleading when those foundations are weak.", method: "Define the question, inspect where the data came from, look for missing or uneven examples, build a simple baseline, and compare results against cases the system has not seen.", scenario: "A high average score may hide poor performance for a smaller group. Looking at errors by case can reveal who benefits, who is missed, and what needs to change.", exercise: "Write one question you could answer with data. List the information you would need and one way the result might be biased." }
+                        : { lens: `the ideas and practical questions surrounding ${subject}`, idea: `${description} A helpful way to begin is to separate what is known, what is assumed, and what still needs a clearer explanation.`, method: "Start with a question, gather dependable evidence, compare more than one explanation, and record how each conclusion follows from what you observed.", scenario: `Consider a real situation connected to ${subject}. The details may be incomplete, so identify what additional evidence would help you make a fair and useful decision.`, exercise: `Write one question about ${subject}. Note what you already know, what you would need to learn, and where you could look for a reliable answer.` };
+    const pages = [
+        `A first look at ${subject}\nBy ${author}\n\n${description}\n\nEvery subject becomes easier to explore when it is connected to a question that matters. This preview approaches ${subject} through ${guidance.lens}. As you read, notice which parts are facts, which are choices, and which depend on the situation.\n\nThe aim of this sample is to give this title its own starting point, drawn from its catalog details and subject area.`,
+        `The central idea\n\n${guidance.idea}\n\nFor ${subject}, the useful habit is to slow down long enough to explain how one step leads to the next. When an explanation feels vague, ask for a concrete example and check whether the same reasoning still works.\n\nKeep the book's description in view: ${description}`, 
+        `A method you can use\n\n${guidance.method}\n\nApply the method to one small case before trying a complicated one. Write down what you expected, what happened, and what you learned. A short record makes it easier to spot a mistaken assumption and to repeat a successful approach.\n\nThis approach gives the ideas in ${subject} a practical test instead of leaving them as definitions to memorize.`,
+        `From idea to practice\n\n${guidance.scenario}\n\nThe details of a real example matter. Ask who is affected, what constraints exist, and what evidence would change your mind. Then compare possible responses by their benefits, risks, and cost.\n\nThis kind of careful reasoning connects ${subject} to the wider ${category} field and helps turn an abstract idea into a decision you can explain.`,
+        `Review and next steps\n\nReturn to the description: ${description}\n\nWhat question does ${subject} help answer? Which part of the method would you try first, and what would count as a good result? Summarize the answer in your own words, then name one thing you still want to investigate.\n\nTry this: ${guidance.exercise}\n\nEnd of the custom sample preview for ${title}.`
+    ];
+    return { demo: true, pages };
+}
+
+let activeBookReader = { book: null, pages: [], page: 0, opener: null };
+function ensureBookReader() {
+    let modal = document.getElementById("bookReaderModal");
+    if (modal) return modal;
+    document.body.insertAdjacentHTML("beforeend", `<div id="bookReaderModal" class="book-reader-modal hidden" role="dialog" aria-modal="true" aria-labelledby="readerTitle">
+        <div class="book-reader-backdrop" data-reader="close"></div><section class="book-reader-shell">
+        <header class="book-reader-top"><div><span class="reader-eyebrow">PENETRATIVE LIBRARY · READING ROOM</span><h1 id="readerTitle"></h1><p id="readerByline"></p></div><button class="reader-exit" data-reader="close" aria-label="Close reader">×</button></header>
+        <p id="readerSampleNote" class="reader-sample-note hidden"></p>
+        <div class="reader-progress-area"><div class="reader-progress-caption"><span>YOUR PROGRESS</span><span id="readerProgressText">0%</span></div><div class="reader-progress-track"><span id="readerProgressFill"></span></div></div>
+        <div class="reader-toolbar"><div class="reader-tool-group"><button type="button" data-reader="font-down" aria-label="Decrease text size">A−</button><button type="button" data-reader="font-up" aria-label="Increase text size">A+</button><button type="button" data-reader="contrast" aria-pressed="false">◐ Contrast</button></div>
+        <div class="reader-narrator"><button type="button" class="reader-listen" data-reader="listen">🔊 Listen</button><button type="button" data-reader="stop-voice" disabled>Stop</button><label>Voice <select id="readerVoice"><option value="">Default</option></select></label><label>Speed <select id="readerRate"><option value="0.8">Slow</option><option value="1" selected>Normal</option><option value="1.2">Fast</option></select></label><span id="readerVoiceStatus" aria-live="polite">Narrator ready</span></div></div>
+        <main class="reader-page-wrap"><article id="readerPage" class="reader-page" tabindex="0" aria-label="Book page"></article></main>
+        <footer class="reader-page-nav"><button type="button" class="reader-prev" data-reader="previous">← Previous</button><span id="readerPageNumber" aria-live="polite"></span><button type="button" class="reader-next" data-reader="next">Next →</button></footer></section></div>`);
+    modal = document.getElementById("bookReaderModal");
+    modal.addEventListener("click", event => {
+        const action = event.target.closest("[data-reader]")?.dataset.reader;
+        if (!action) return;
+        if (action === "close") closeBookReader();
+        if (action === "previous") moveReaderPage(activeBookReader.page - 1);
+        if (action === "next") moveReaderPage(activeBookReader.page + 1);
+        if (action === "font-down") changeReaderFont(-2);
+        if (action === "font-up") changeReaderFont(2);
+        if (action === "contrast") toggleReaderContrast();
+        if (action === "listen") toggleReaderNarration();
+        if (action === "stop-voice") stopReaderNarration();
+    });
+    modal.addEventListener("change", event => { if (event.target.id === "readerVoice") updateReaderVoiceStatus("Voice selected."); });
+    return modal;
+}
+function openReader(bookId) {
+    const book = books.find(item => item.id === bookId);
+    if (!book) return;
+    if (!isBookOwnedOrBorrowed(book)) { alert("Borrow or buy this book before reading it."); return; }
+    const content = getReadableBookPages(book);
+    const key = String(currentUser).toLowerCase();
+    const progress = readJSON("libraryReadingProgress", {});
+    const savedPage = Number(progress[key]?.[book.id]?.page) || 1;
+    activeBookReader = { book, pages: content.pages, page: Math.min(Math.max(savedPage - 1, 0), content.pages.length - 1), opener: document.activeElement };
+    const modal = ensureBookReader();
+    document.getElementById("readerTitle").textContent = book.title;
+    document.getElementById("readerByline").textContent = `By ${book.author || "Unknown author"} · ${book.category || "General"}`;
+    const note = document.getElementById("readerSampleNote");
+    note.textContent = "Custom sample preview for this title. Full published book text is not included in this frontend demo.";
+    note.classList.toggle("hidden", !content.demo);
+    modal.classList.remove("hidden");
+    document.body.classList.add("reader-lock-scroll");
+    renderReaderPage();
+    loadReaderVoices();
+    document.getElementById("readerPage")?.focus();
+}
+function renderReaderPage() {
+    if (!activeBookReader.book) return;
+    const page = activeBookReader.pages[activeBookReader.page] || "";
+    document.getElementById("readerPage").innerHTML = page.split(/\n{2,}/).map(part => `<p>${escapeHTML(part).replace(/\n/g, "<br>")}</p>`).join("");
+    const current = activeBookReader.page + 1;
+    const total = activeBookReader.pages.length;
+    document.getElementById("readerPageNumber").textContent = `Page ${current} of ${total}`;
+    const percent = Math.round(current / total * 100);
+    document.getElementById("readerProgressText").textContent = `${percent}%`;
+    document.getElementById("readerProgressFill").style.width = `${percent}%`;
+    document.querySelector(".reader-progress-track")?.setAttribute("aria-valuenow", String(percent));
+    document.querySelector('[data-reader="previous"]').disabled = current <= 1;
+    document.querySelector('[data-reader="next"]').disabled = current >= total;
+    const saved = readJSON("libraryReadingProgress", {});
+    const key = String(currentUser).toLowerCase();
+    saved[key] = saved[key] || {};
+    saved[key][activeBookReader.book.id] = { page: current, total };
+    try { localStorage.setItem("libraryReadingProgress", JSON.stringify(saved)); } catch {}
+}
+function moveReaderPage(page) {
+    if (page < 0 || page >= activeBookReader.pages.length) return;
+    stopReaderNarration();
+    activeBookReader.page = page;
+    renderReaderPage();
+    document.getElementById("readerPage").scrollTop = 0;
+}
+function changeReaderFont(amount) {
+    const page = document.getElementById("readerPage");
+    const size = Number.parseInt(getComputedStyle(page).fontSize, 10) || 20;
+    page.style.fontSize = `${Math.min(32, Math.max(15, size + amount))}px`;
+}
+function toggleReaderContrast() {
+    const modal = document.getElementById("bookReaderModal");
+    const enabled = modal.classList.toggle("reader-contrast");
+    modal.querySelector('[data-reader="contrast"]')?.setAttribute("aria-pressed", String(enabled));
+}
+function loadReaderVoices() {
+    if (!window.speechSynthesis) return;
+    const select = document.getElementById("readerVoice");
+    const voices = speechSynthesis.getVoices();
+    const selected = select.value;
+    if (voices.length) {
+        select.replaceChildren(new Option("Default", ""));
+        voices.forEach(voice => select.add(new Option(`${voice.name}${voice.lang ? ` · ${voice.lang}` : ""}`, voice.voiceURI)));
+        if ([...select.options].some(option => option.value === selected)) select.value = selected;
+    }
+}
+function updateReaderVoiceStatus(message) { const status = document.getElementById("readerVoiceStatus"); if (status) status.textContent = message; }
+function toggleReaderNarration() {
+    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { updateReaderVoiceStatus("Text-to-speech is unavailable in this browser."); return; }
+    const speech = window.speechSynthesis;
+    const button = document.querySelector('[data-reader="listen"]');
+    if (speech.speaking && !speech.paused) { speech.pause(); button.textContent = "▶ Resume"; updateReaderVoiceStatus("Narration paused."); return; }
+    if (speech.paused) { speech.resume(); button.textContent = "⏸ Pause"; updateReaderVoiceStatus("Reading this page aloud."); return; }
+    const text = document.getElementById("readerPage")?.innerText.trim();
+    if (!text) return;
+    speech.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voiceURI = document.getElementById("readerVoice")?.value;
+    const voice = speech.getVoices().find(item => item.voiceURI === voiceURI);
+    if (voice) { utterance.voice = voice; utterance.lang = voice.lang; }
+    utterance.rate = Number(document.getElementById("readerRate")?.value) || 1;
+    utterance.onstart = () => { button.textContent = "⏸ Pause"; updateReaderVoiceStatus("Reading this page aloud."); };
+    utterance.onend = () => { button.textContent = "🔊 Listen"; updateReaderVoiceStatus("Finished this page."); };
+    utterance.onerror = () => { button.textContent = "🔊 Listen"; updateReaderVoiceStatus("Narration could not start."); };
+    speech.speak(utterance);
+    const stop = document.querySelector('[data-reader="stop-voice"]'); if (stop) stop.disabled = false;
+}
+function stopReaderNarration() {
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    const button = document.querySelector('[data-reader="listen"]'); if (button) button.textContent = "🔊 Listen";
+    const stop = document.querySelector('[data-reader="stop-voice"]'); if (stop) stop.disabled = true;
+    if (document.getElementById("readerVoiceStatus")) updateReaderVoiceStatus("Narration stopped.");
+}
+function closeBookReader() {
+    const modal = document.getElementById("bookReaderModal");
+    if (!modal) return;
+    stopReaderNarration();
+    modal.classList.add("hidden");
+    document.body.classList.remove("reader-lock-scroll");
+    activeBookReader.opener?.focus?.();
+    activeBookReader = { book: null, pages: [], page: 0, opener: null };
+}
+document.addEventListener("keydown", event => {
+    if (!activeBookReader.book) return;
+    if (event.key === "Escape") closeBookReader();
+    if (["ArrowRight", "PageDown"].includes(event.key)) { event.preventDefault(); moveReaderPage(activeBookReader.page + 1); }
+    if (["ArrowLeft", "PageUp"].includes(event.key)) { event.preventDefault(); moveReaderPage(activeBookReader.page - 1); }
+});
+if (window.speechSynthesis) speechSynthesis.addEventListener?.("voiceschanged", loadReaderVoices);
 
 function renderBookCard(book) {
     const isFavorite = favorites.includes(book.id);
@@ -763,14 +1104,16 @@ function renderBookCard(book) {
     return `
         <div class="book-card ${isPremCard ? 'premium-card' : ''}">
             ${isPremCard ? '<span class="status premium-badge" style="margin-bottom:6px;">⭐ PREMIUM</span>' : ''}
+            ${hasRealPicture(book.image) ? `<img class="book-card-cover" src="${escapeHTML(book.image)}" alt="${escapeHTML(book.title)} cover" loading="lazy" onerror="tryNextCoverFormat(this)">` : ''}
             <h4>${escapeHTML(book.title)}</h4>
             <div class="meta">${escapeHTML(book.author)} · ${book.year || "—"}</div>
             <div class="meta">★ ${book.rating || "—"} · ${book.available || 0} avail</div>
             <div class="meta">Shelf: ${escapeHTML(book.shelf || "—")}</div>
             <div class="actions">
                 <button class="action-btn" onclick="borrowBook('${escapeHTML(book.id)}')">Borrow</button>
+                ${isBookOwnedOrBorrowed(book) ? `<button class="action-btn read-book-action" onclick="openReader('${escapeHTML(book.id)}')">Read</button>` : ""}
                 <button class="action-btn fav" onclick="toggleFavorite('${escapeHTML(book.id)}')">${isFavorite ? "♥" : "♡"}</button>
-                <button class="action-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')">Rate</button>
+                ${hasPurchasedBook(book.id) ? `<button class="action-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')">Rate</button>` : ""}
                 <button class="action-btn report" onclick="openReportModal('book', '${escapeHTML(book.id)}')">Report</button>
                 <button class="action-btn" onclick="viewBook('${escapeHTML(book.id)}')">View</button>
             </div>
@@ -923,8 +1266,7 @@ function renderBooksPage() {
         if (alreadyBorrowed) {
             primaryBtn = `<button class="primary-btn card-borrow-btn" style="background:linear-gradient(135deg,#059669,#047857);" onclick="returnBook('${escapeHTML(book.id)}')">Return</button>`;
         } else {
-            const bs = getBorrowState(book);
-            primaryBtn = `<button class="primary-btn card-borrow-btn" onclick="borrowBook('${escapeHTML(book.id)}')" ${bs.disabled ? "disabled" : ""} title="${escapeHTML(bs.reason)}">${bs.label}</button>`;
+            primaryBtn = `<button class="primary-btn card-borrow-btn" onclick="borrowBook('${escapeHTML(book.id)}')" ${available <= 0 ? "disabled" : ""}>Borrow</button>`;
         }
 
         return `
@@ -949,13 +1291,13 @@ function renderBooksPage() {
                     </div>
                     <div class="card-meta-row">
                         <span class="card-price">${formatCurrency(book.price)}</span>
-                        <span class="card-copies">${available} available · Shelf ${escapeHTML(book.shelf || "—")} · Your loans ${myActiveIds.size}/${MAX_BORROWS}</span>
+                        <span class="card-copies">${available} available · Shelf ${escapeHTML(book.shelf || "—")}</span>
                     </div>
                     <div class="card-actions">
                         ${primaryBtn}
-                        <button class="action-btn" onclick="addToCart('${escapeHTML(book.id)}')" title="${book.isPremium && !isUserPremium(currentUser) ? "Premium members only" : "Buy"}">${book.isPremium && !isUserPremium(currentUser) ? "🔒" : "🛒"}</button>
+                        <button class="action-btn" onclick="addToCart('${escapeHTML(book.id)}')" title="Buy">🛒</button>
                         <button class="action-btn fav" onclick="toggleFavorite('${escapeHTML(book.id)}')" title="Favorite">${isFavorite ? "♥" : "♡"}</button>
-                        <button class="action-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')" title="Rate">★</button>
+                        ${hasPurchasedBook(book.id) ? `<button class="action-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')" title="Rate">★</button>` : ""}
                         <button class="action-btn report" onclick="openReportModal('book', '${escapeHTML(book.id)}')" title="Report">⚑</button>
                         <button class="action-btn" onclick="viewBook('${escapeHTML(book.id)}')" title="Details">👁</button>
                     </div>
@@ -963,6 +1305,29 @@ function renderBooksPage() {
             </div>
         `;
     }).join("");
+}
+
+function renderAuthorsPage() {
+    const element = document.getElementById("authorList");
+    if (!element) return;
+
+    const authorMap = {};
+
+    books.forEach(book => {
+        if (!book.author) return;
+
+        if (!authorMap[book.author]) authorMap[book.author] = [];
+        authorMap[book.author].push(book);
+    });
+
+    const authors = Object.keys(authorMap).sort();
+
+    element.innerHTML = authors.map(author => `
+        <div class="author-card" onclick="filterByAuthor('${escapeHTML(author)}')">
+            <h4>${escapeHTML(author)}</h4>
+            <div class="meta">${authorMap[author].length} book${authorMap[author].length > 1 ? "s" : ""}</div>
+        </div>
+    `).join("") || '<p class="empty">No authors</p>';
 }
 
 function filterByAuthor(author) {
@@ -1125,7 +1490,7 @@ function renderProfilePage() {
         if (membershipActionArea) {
             membershipActionArea.innerHTML = `
                 <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
-                    <span class="status premium-badge" style="padding: 8px 14px; font-size: 13px;">✨ Premium Active${getCurrentAccount()?.premiumUntil ? " until " + escapeHTML(getCurrentAccount().premiumUntil) : ""}</span>
+                    <span class="status premium-badge" style="padding: 8px 14px; font-size: 13px;">✨ Premium Active (₱99/mo)</span>
                     <button class="secondary-btn" onclick="cancelSubscription()" style="padding:6px 12px; font-size:12px;">Cancel Subscription</button>
                 </div>
             `;
@@ -1216,6 +1581,11 @@ function saveSettings(event) {
         return;
     }
 
+    if (hasInvalidUsernameCharacters(newUsername)) {
+        alert("Display username can only contain letters.");
+        return;
+    }
+
     if (newUsername.toLowerCase() !== currentUser.toLowerCase()) {
         const accounts = getSavedAccounts();
         if (["admin", "woopiiee"].includes(newUsername.toLowerCase()) || accounts.some(acc => acc.username?.toLowerCase() === newUsername.toLowerCase())) {
@@ -1261,6 +1631,11 @@ async function changePassword(event) {
 
     if (errorEl) errorEl.textContent = "";
 
+    if (hasInvalidPasswordCharacters(newPw) || hasInvalidPasswordCharacters(confirmPw)) {
+        if (errorEl) errorEl.textContent = "Password may only include letters, numbers, and _ @ - # ? !.";
+        return;
+    }
+
     if (newPw.length < 8) {
         if (errorEl) errorEl.textContent = "New password must be at least 8 characters.";
         return;
@@ -1272,7 +1647,8 @@ async function changePassword(event) {
 
     if (isBuiltInAdmin(currentUser)) {
         if (
-            !checkBuiltInPassword(currentUser, currentPw)
+            (currentUser.toLowerCase() === "admin" && currentPw !== "admin123") ||
+            (currentUser.toLowerCase() === "woopiiee" && currentPw !== "Robbie")
         ) {
             if (errorEl) errorEl.textContent = "Current password is incorrect.";
             return;
@@ -1356,20 +1732,14 @@ function exportLibraryData() {
 }
 
 function resetAllLocalData() {
-    const typed = prompt("This will erase ALL library data in this browser (accounts, books, borrows, cart...).\nThis cannot be undone.\n\nType RESET to confirm:");
-    if (typed === null) return;
-    if (typed.trim() !== "RESET") {
-        showToast("Reset cancelled: you must type RESET exactly.");
-        return;
-    }
+    if (!confirm("This will reset ALL library data (books, borrows, cart, etc.) stored in this browser. Continue?")) return;
+    if (!confirm("Are you absolutely sure? This cannot be undone.")) return;
 
     Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
     localStorage.removeItem(AUTH_ACCOUNTS_KEY);
     localStorage.removeItem("libraryLoggedIn");
     localStorage.removeItem("libraryLoggedInUser");
     localStorage.removeItem("libraryTheme");
-    localStorage.removeItem(REWARDS_KEY);
-    localStorage.removeItem("libraryDeletedDefaults");
     localStorage.removeItem("libraryNotifPref");
     localStorage.removeItem("libraryCompactCards");
     localStorage.removeItem("libraryChats");
@@ -1665,12 +2035,6 @@ function renderAdminPage() {
                                         ${account.role === "librarian" ? "Remove Lib" : "Make Librarian"}
                                     </button>
                                     <button
-                                        class="action-btn"
-                                        onclick="adminResetPassword('${escapeHTML(account.username)}')"
-                                    >
-                                        Reset PW
-                                    </button>
-                                    <button
                                         class="action-btn ${account.banned ? "" : "delete"}"
                                         onclick="toggleBanUser('${escapeHTML(account.username)}')"
                                     >
@@ -1686,6 +2050,76 @@ function renderAdminPage() {
 
     renderAdminInventory();
     renderAuthorApplications();
+    renderAdminAnalytics();
+    renderAdminOverdue();
+    renderAdminAuditTrail();
+}
+
+function renderAdminAnalytics() {
+    const summary = document.getElementById("adminAnalyticsSummary");
+    if (!summary) return;
+    const active = borrows.filter(loan => !loan.returned);
+    const overdue = active.filter(loan => isOverdue(loan.dueDate));
+    const recentSince = addDays(today(), -29);
+    const priorSince = addDays(today(), -59);
+    const recent30 = borrows.filter(loan => loan.borrowedOn >= recentSince && loan.borrowedOn <= today()).length;
+    const prior30 = borrows.filter(loan => loan.borrowedOn >= priorSince && loan.borrowedOn < recentSince).length;
+    const forecast = Math.max(0, Math.round(recent30 + (recent30 - prior30) * 0.5));
+    const monthlyBorrowing = new Map();
+    borrows.forEach(loan => { const month = String(loan.borrowedOn || "").slice(0, 7); if (month) monthlyBorrowing.set(month, (monthlyBorrowing.get(month) || 0) + 1); });
+    const busiestMonth = [...monthlyBorrowing.entries()].sort((a, b) => b[1] - a[1])[0];
+    summary.innerHTML = [
+        ["Borrowing history", `${borrows.length}`, "Recorded loans"],
+        ["Active loans", `${active.length}`, "Currently on loan"],
+        ["Overdue now", `${overdue.length}`, "Needs follow-up"],
+        ["Busiest month", busiestMonth?.[0] || "—", busiestMonth ? `${busiestMonth[1]} loans` : "No loan history"],
+        ["Recent demand", `${recent30}`, "Loans in the last 30 days"],
+        ["Demand estimate", `${forecast}`, "Expected loans in the next 30 days"]
+    ].map(([label, value, note]) => `<div class="admin-analytics-metric"><span>${label}</span><strong>${value}</strong><small>${note}</small></div>`).join("");
+
+    const booksById = new Map(books.map(book => [String(book.id), book]));
+    const counts = list => { const map = new Map(); list.forEach(loan => { const key = loan.id; const book = booksById.get(String(key)); const label = book?.title || loan.title || key; map.set(label, (map.get(label) || 0) + 1); }); return map; };
+    const categories = new Map();
+    borrows.forEach(loan => { const category = booksById.get(String(loan.id))?.category || "Other"; categories.set(category, (categories.get(category) || 0) + 1); });
+    const weekdayCounts = new Map([["Sunday", 0], ["Monday", 0], ["Tuesday", 0], ["Wednesday", 0], ["Thursday", 0], ["Friday", 0], ["Saturday", 0]]);
+    borrows.forEach(loan => { if (!loan.borrowedOn) return; const day = new Date(`${loan.borrowedOn}T00:00:00`).toLocaleDateString("en-US", { weekday: "long" }); weekdayCounts.set(day, (weekdayCounts.get(day) || 0) + 1); });
+    const renderBars = (elementId, map, limit = 5) => {
+        const element = document.getElementById(elementId); if (!element) return;
+        const items = [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
+        const max = Math.max(1, ...items.map(item => item[1]));
+        element.innerHTML = items.length ? items.map(([label, value]) => `<div class="admin-bar-row"><span class="admin-bar-label" title="${escapeHTML(label)}">${escapeHTML(label)}</span><div class="admin-bar-track"><div class="admin-bar-fill" style="width:${Math.max(4, value / max * 100)}%"></div></div><span class="admin-bar-value">${value}</span></div>`).join("") : '<p class="admin-chart-empty">Borrowing history will appear here.</p>';
+    };
+    renderBars("adminPopularBooks", counts(borrows));
+    renderBars("adminPopularCategories", categories, 6);
+    renderBars("adminPeakPeriods", weekdayCounts, 7);
+    const forecastElement = document.getElementById("adminDemandForecast");
+    if (forecastElement) forecastElement.innerHTML = `<div class="admin-forecast-value">${forecast} loans</div><p>${recent30} loans occurred in the latest 30 days; ${prior30} in the 30 days before that.</p>`;
+}
+
+function renderAdminOverdue() {
+    const table = document.getElementById("adminOverdueTable");
+    if (!table) return;
+    const rateInput = document.getElementById("overduePenaltyRate");
+    if (rateInput && document.activeElement !== rateInput) rateInput.value = String(getOverdueRate());
+    const rows = borrows.filter(loan => !loan.returned && isOverdue(loan.dueDate));
+    rows.forEach(loan => {
+        if (!loan.overdueNoticeSent) {
+            const days = getDaysLate(loan.dueDate);
+            loan.overdueNoticeSent = true;
+            addNotification("Overdue book reminder", `"${loan.title || loan.id}" is ${days} day(s) overdue. Estimated penalty: ${formatCurrency(days * getOverdueRate())}. Please return it.`);
+        }
+    });
+    table.innerHTML = rows.length ? rows.map(loan => {
+        const days = getDaysLate(loan.dueDate);
+        return `<tr class="admin-overdue-row"><td><strong>${escapeHTML(loan.title || loan.id)}</strong><small>${escapeHTML(loan.id)}</small></td><td>${escapeHTML(loan.username || "—")}</td><td>${escapeHTML(loan.dueDate || "—")}</td><td>${days}</td><td>${formatCurrency(days * getOverdueRate())}</td><td><button type="button" class="action-btn" onclick="adminReturnBook('${escapeHTML(loan.id)}','${escapeHTML(loan.username)}')">Mark returned</button></td></tr>`;
+    }).join("") : '<tr><td colspan="6" class="empty">No overdue loans right now.</td></tr>';
+}
+
+function renderAdminAuditTrail() {
+    const table = document.getElementById("adminAuditTable");
+    if (!table) return;
+    const entries = readJSON(ADMIN_AUDIT_KEY, []);
+    table.innerHTML = entries.length ? entries.slice(0, 100).map(entry => `<tr><td>${escapeHTML(entry.timestamp ? new Date(entry.timestamp).toLocaleString() : "—")}</td><td>${escapeHTML(entry.account || "—")}</td><td>${escapeHTML(entry.action || "—")}</td><td>${escapeHTML(entry.details || "—")}</td></tr>`).join("") : '<tr><td colspan="4" class="empty">Admin and transaction activity will be recorded here.</td></tr>';
 }
 
 function toggleAdminRole(username) {
@@ -1711,6 +2145,7 @@ function toggleAdminRole(username) {
     }
 
     account.role = account.role === "admin" ? "user" : "admin";
+    recordAdminAction("Changed account role", `${username} is now ${account.role}.`);
 
     localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
 
@@ -1745,6 +2180,7 @@ function toggleLibrarianRole(username) {
     }
 
     account.role = account.role === "librarian" ? "user" : "librarian";
+    recordAdminAction("Changed librarian role", `${username} is now ${account.role}.`);
 
     localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
 
@@ -1778,6 +2214,7 @@ function toggleBanUser(username) {
     if (!confirm(`Are you sure you want to ${action} ${username}?`)) return;
 
     account.banned = !account.banned;
+    recordAdminAction(account.banned ? "Banned account" : "Unbanned account", username);
 
     localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
 
@@ -1814,18 +2251,10 @@ function adjustCopies(id, amount) {
         book.available = available - 1;
     }
 
+    recordAdminAction(amount > 0 ? "Added book copy" : "Removed book copy", `${book.title} (${book.id}); copies ${book.copies}, available ${book.available}.`);
+
     saveLibraryData();
     renderAll();
-}
-
-function getBorrowState(book) {
-    const mine = getUserBorrows();
-    if (mine.some(b => b.id === book.id)) return { disabled: false, label: "Borrow", reason: "" };
-    if (book.isPremium && !isUserPremium(currentUser)) return { disabled: true, label: "⭐ Premium", reason: "Premium members only" };
-    if ((Number(book.available) || 0) <= 0) return { disabled: true, label: "Unavailable", reason: "No copies available" };
-    if (mine.some(b => isOverdue(b.dueDate))) return { disabled: true, label: "Overdue", reason: "Return your overdue books first" };
-    if (mine.length >= MAX_BORROWS) return { disabled: true, label: "Limit reached", reason: `You already have ${MAX_BORROWS} books` };
-    return { disabled: false, label: "Borrow", reason: "" };
 }
 
 function borrowBook(id) {
@@ -1845,13 +2274,8 @@ function borrowBook(id) {
 
     const activeBorrows = getUserBorrows();
 
-    if (activeBorrows.length >= MAX_BORROWS) {
-        alert(`Max ${MAX_BORROWS} books allowed`);
-        return;
-    }
-
-    if (activeBorrows.some(borrow => isOverdue(borrow.dueDate))) {
-        alert("You have an overdue book. Please return it before borrowing another.");
+    if (activeBorrows.length >= 3) {
+        alert("Max 3 books allowed");
         return;
     }
 
@@ -1861,8 +2285,8 @@ function borrowBook(id) {
     }
 
     const borrowedOn = today();
-    const dueDate = addDays(borrowedOn, LOAN_DAYS);
-    const borrowFee = BORROW_FEE;
+    const dueDate = addDays(borrowedOn, 14);
+    const borrowFee = 10;
 
     borrows.push({
         id,
@@ -1875,6 +2299,7 @@ function borrowBook(id) {
         returned: false,
         returnedOn: null
     });
+    recordAuditEvent("Loan started", `${book.title}; borrower ${currentUser}; due ${dueDate}; fee ${formatCurrency(borrowFee)}.`);
 
     sales.today += borrowFee;
     sales.month += borrowFee;
@@ -1883,13 +2308,13 @@ function borrowBook(id) {
 
     addNotification(
         "Book Borrowed",
-        `You borrowed "${book.title}". Fee: ${formatCurrency(BORROW_FEE)}. Due date: ${dueDate}`
+        `You borrowed "${book.title}". Fee: ₱10. Due date: ${dueDate}`
     );
 
     saveLibraryData();
     renderAll();
 
-    alert(`"${book.title}" borrowed!\nBorrow Fee: ${formatCurrency(BORROW_FEE)}\nDue: ${dueDate}`);
+    alert(`"${book.title}" borrowed!\nBorrow Fee: ₱10\nDue: ${dueDate}`);
 
     showPage("borrow");
 }
@@ -1915,15 +2340,32 @@ function returnBook(id) {
         );
     }
 
+    loan.overdueDays = getDaysLate(loan.dueDate);
+    loan.overduePenalty = loan.overdueDays * getOverdueRate();
+    loan.status = "returned";
     addNotification(
         "Book Returned",
-        `You returned "${loan.title}". Thank you!`
+        `You returned "${loan.title}". ${loan.overdueDays ? `It was ${loan.overdueDays} day(s) late; estimated penalty: ${formatCurrency(loan.overduePenalty)}. ` : ""}Thank you!`
     );
+    recordAuditEvent("Loan returned", `${loan.title}; borrower ${loan.username}; ${loan.overdueDays} day(s) late; estimated penalty ${formatCurrency(loan.overduePenalty)}.`);
 
     saveLibraryData();
     renderAll();
 
     alert(`"${loan.title}" returned`);
+}
+
+function adminReturnBook(id, username) {
+    if (!isLibrarianOrAdmin(currentUser)) return;
+    const loan = borrows.find(item => item.id === id && sameUser(item.username, username) && !item.returned);
+    if (!loan || !confirm(`Mark "${loan.title}" returned for ${loan.username}?`)) return;
+    loan.returned = true; loan.returnedOn = today(); loan.status = "returned";
+    loan.overdueDays = getDaysLate(loan.dueDate); loan.overduePenalty = loan.overdueDays * getOverdueRate();
+    const book = books.find(item => item.id === id);
+    if (book) book.available = Math.min(Number(book.copies) || 0, (Number(book.available) || 0) + 1);
+    addNotification("Overdue loan returned", `${loan.username} returned "${loan.title}". Estimated penalty: ${formatCurrency(loan.overduePenalty)}.`);
+    recordAdminAction("Recorded book return", `${loan.title}; borrower ${loan.username}; estimated penalty ${formatCurrency(loan.overduePenalty)}.`);
+    saveLibraryData(); renderAll();
 }
 
 function toggleFavorite(id) {
@@ -1967,9 +2409,7 @@ function viewBook(id) {
     if (alreadyBorrowed) {
         borrowReturnBtn = `<button class="primary-btn" style="background:linear-gradient(135deg,#059669,#047857);" onclick="returnBook('${escapeHTML(book.id)}'); closeBookDetailPanel();">Return</button>`;
     } else {
-        const bs = getBorrowState(book);
-        borrowReturnBtn = `<button class="primary-btn" onclick="borrowBook('${escapeHTML(book.id)}'); closeBookDetailPanel();" ${bs.disabled ? "disabled" : ""} title="${escapeHTML(bs.reason)}">${bs.label}</button>`;
-        if (bs.disabled && bs.reason) borrowReturnBtn += `<p class="hint-text">${escapeHTML(bs.reason)}</p>`;
+        borrowReturnBtn = `<button class="primary-btn" onclick="borrowBook('${escapeHTML(book.id)}'); closeBookDetailPanel();" ${available <= 0 ? "disabled" : ""}>Borrow</button>`;
     }
 
     const detailPics = [book.image, ...(Array.isArray(book.gallery) ? book.gallery : [])].filter(hasRealPicture);
@@ -2042,9 +2482,9 @@ function viewBook(id) {
 
         <div class="detail-actions-footer">
             ${borrowReturnBtn}
-            <button class="secondary-btn" onclick="addToCart('${escapeHTML(book.id)}')">${book.isPremium && !isUserPremium(currentUser) ? "🔒 Premium only" : "Buy"}</button>
+            <button class="secondary-btn" onclick="addToCart('${escapeHTML(book.id)}')">Buy</button>
             <button class="secondary-btn fav" onclick="toggleFavorite('${escapeHTML(book.id)}')">${isFavorite ? "♥ Favorited" : "♡ Favorite"}</button>
-            <button class="secondary-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')">Rate</button>
+            ${hasPurchasedBook(book.id) ? `<button class="secondary-btn rate" onclick="openRateModal('${escapeHTML(book.id)}')">Rate</button>` : ""}
         </div>
     `;
 
@@ -2069,19 +2509,6 @@ function closeBookDetailPanel() {
 function addToCart(id) {
     const book = books.find(item => item.id === id);
     if (!book) return;
-
-    if (book.isPremium && !isUserPremium(currentUser)) {
-        showToast("⭐ This is a Premium book. Upgrade to Premium in your profile to buy or borrow it.");
-        return;
-    }
-
-    const inCart = cart.find(item => item.id === id)?.quantity || 0;
-    if ((Number(book.available) || 0) <= inCart) {
-        showToast(Number(book.available) > 0
-            ? `Only ${book.available} cop${book.available == 1 ? "y" : "ies"} in stock.`
-            : "Sorry, this book is out of stock.");
-        return;
-    }
 
     const existing = cart.find(item => item.id === id);
     if (existing) {
@@ -2122,16 +2549,7 @@ function deleteBook(id) {
     }
 
     if (!confirm(`Delete "${book.title}"?`)) return;
-
-    if (defaultBooks.some(item => item.id === id)) {
-        try {
-            const deleted = readJSON("libraryDeletedDefaults", []);
-            if (!deleted.includes(id)) deleted.push(id);
-            localStorage.setItem("libraryDeletedDefaults", JSON.stringify(deleted));
-        } catch (error) {
-            console.warn("Could not remember deleted book:", error);
-        }
-    }
+    recordAdminAction("Deleted book", `${book.title} (${book.id}).`);
 
     books = books.filter(item => item.id !== id);
     cart = cart.filter(item => item.id !== id);
@@ -2167,16 +2585,45 @@ function checkoutCart() {
         return;
     }
 
-    const total = cart.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-    );
+    openCheckoutPayment();
+}
 
-    if (!confirm(`Checkout ${formatCurrency(total)}?`)) return;
+function openCheckoutPayment() {
+    if (!cart.length) return;
+    const total = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+    const summary = document.getElementById("checkoutOrderSummary");
+    if (summary) summary.innerHTML = `${cart.map(item => `<div class="checkout-order-line"><span>${escapeHTML(item.title)} × ${Number(item.quantity) || 1}</span><span>${formatCurrency((Number(item.price) || 0) * (Number(item.quantity) || 1))}</span></div>`).join("")}<div class="checkout-order-line checkout-order-total"><span>Total</span><span>${formatCurrency(total)}</span></div>`;
+    const modal = document.getElementById("checkoutPaymentModal");
+    modal?.classList.remove("hidden"); modal?.classList.add("show");
+}
+
+function closeCheckoutPayment() {
+    const modal = document.getElementById("checkoutPaymentModal");
+    modal?.classList.remove("show");
+    setTimeout(() => modal?.classList.add("hidden"), 250);
+}
+
+function toggleCheckoutPaymentDetails() {
+    const method = document.querySelector('input[name="checkoutPaymentMethod"]:checked')?.value || "gcash";
+    ["gcash", "maya", "bank"].forEach(name => document.getElementById(`checkout${name[0].toUpperCase()}${name.slice(1)}Details`)?.classList.toggle("hidden", method !== name));
+    const error = document.getElementById("checkoutPaymentError");
+    if (error) error.textContent = "";
+}
+
+function confirmCheckoutPayment() {
+    if (!cart.length || !currentUser) return;
+    const method = document.querySelector('input[name="checkoutPaymentMethod"]:checked')?.value || "gcash";
+    const total = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+
+    cart.forEach(item => {
+        purchases.push({ id: item.id, title: item.title, username: currentUser, purchasedOn: today(), quantity: Number(item.quantity) || 1, amount: (Number(item.price) || 0) * (Number(item.quantity) || 1), paymentMethod: method });
+    });
 
     sales.today += total;
     sales.month += total;
     sales.count += cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+    recordAuditEvent("Purchase transaction", `${cart.length} title(s), ${formatCurrency(total)} via ${method.toUpperCase()} (demo).`);
 
     cart = [];
 
@@ -2187,11 +2634,16 @@ function checkoutCart() {
 
     saveLibraryData();
     renderAll();
-
-    alert(`Done! Total: ${formatCurrency(total)}`);
+    closeCheckoutPayment();
+    alert(`Demo checkout complete via ${method.toUpperCase()}! Total: ${formatCurrency(total)}. No payment was processed.`);
 }
 
 function openRateModal(bookId) {
+    if (!hasPurchasedBook(bookId)) {
+        alert("Buy this book before rating it.");
+        return;
+    }
+
     const ratingKey = String(currentUser).toLowerCase();
     const userList = [...(userRatings[ratingKey] || []), ...(userRatings[currentUser] || [])];
     if (userList.includes(bookId)) {
@@ -2232,6 +2684,11 @@ function highlightStars(count) {
 
 function submitRating() {
     if (!currentRatingBookId) return;
+    if (!hasPurchasedBook(currentRatingBookId)) {
+        closeRateModal();
+        alert("You can rate this book after you buy it.");
+        return;
+    }
 
     const ratingKey = String(currentUser).toLowerCase();
     if (!userRatings[ratingKey]) {
@@ -2295,6 +2752,13 @@ function openPremiumModal() {
     document.getElementById("premiumModal")?.classList.add("show");
 }
 
+function togglePremiumPaymentDetails() {
+    const method = document.querySelector('input[name="premiumPaymentMethod"]:checked')?.value || "gcash";
+    ["gcash", "maya", "bank"].forEach(name => document.getElementById(`premium${name[0].toUpperCase()}${name.slice(1)}Details`)?.classList.toggle("hidden", method !== name));
+    const error = document.getElementById("premiumPaymentError");
+    if (error) error.textContent = "";
+}
+
 function closePremiumModal() {
     document.getElementById("premiumModal")?.classList.remove("show");
     setTimeout(() => {
@@ -2303,22 +2767,22 @@ function closePremiumModal() {
 }
 
 function confirmUpgradePremium() {
-    if (!confirm(`Pay ${formatCurrency(PREMIUM_PRICE)} for ${PREMIUM_DAYS} days of Premium?\n(Demo only, no real payment.)`)) return;
+    const method = document.querySelector('input[name="premiumPaymentMethod"]:checked')?.value || "gcash";
     const accounts = getSavedAccounts();
     const account = accounts.find(item => item.username?.toLowerCase() === String(currentUser).toLowerCase());
 
     if (account) {
         account.membership = "premium";
-        account.premiumUntil = addDays(today(), PREMIUM_DAYS);
         localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
+        recordAuditEvent("Premium membership activated", `${currentUser}; ₱99 via ${method.toUpperCase()} (demo transaction).`);
     }
 
-    sales.today += PREMIUM_PRICE;
-    sales.month += PREMIUM_PRICE;
+    sales.today += 99;
+    sales.month += 99;
     saveLibraryData();
 
-    addNotification("⭐ Premium Membership Activated!", "Welcome to VIP Premium! You now have unlimited access to all 75 exclusive premium books.");
-    alert(`You are now Premium until ${addDays(today(), PREMIUM_DAYS)}. Enjoy your VIP perks!`);
+    addNotification("⭐ Premium Membership Activated!", `Welcome to VIP Premium! Demo payment recorded with ${method.toUpperCase()}. No real payment was processed.`);
+    alert(`Premium demo checkout complete via ${method.toUpperCase()} (₱99/mo). No real payment was processed.`);
     closePremiumModal();
     renderAll();
 }
@@ -2332,6 +2796,7 @@ function cancelSubscription() {
     if (account) {
         account.membership = "regular";
         localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
+        recordAuditEvent("Premium membership canceled", `${currentUser} changed to regular membership.`);
     }
 
     addNotification("Subscription Canceled", "Your Premium membership has been canceled. You are now a Regular member.");
@@ -2466,21 +2931,20 @@ function saveCustomAvatar() {
 
 function renderAll() {
     populateCategoryFilters();
+    notifyCurrentUserOverdueLoans();
     renderDashboard();
     renderBooksPage();
     renderAuthorsPage();
     renderBorrowPage();
+    renderYourBooksPage();
     renderCartPage();
     renderSearchPage();
     renderProfilePage();
     renderAvatars();
     renderNotifications();
-    renderRewardsPage();
-    renderRecoveryStatus();
 
     applyRoleVisibility();
     refreshRoleBadge();
-    enforceThemeAccess();
     renderThemePicker();
     renderAuthorSettingsPanel();
     renderDeleteAccountPanel();
@@ -2519,33 +2983,13 @@ const THEMES = {
 
 const FANCY_THEMES = ["fire", "galaxy", "sunny", "ocean", "forest", "rose", "cyber", "midnight", "sakura", "sunset", "aurora", "coffee", "matrix", "gold", "mint", "peach"];
 
-const PREMIUM_THEMES = ["galaxy", "cyber", "matrix", "aurora", "sunset", "gold"];
-
-function canUseTheme(name) {
-    return !PREMIUM_THEMES.includes(name) || isUserPremium(currentUser);
-}
-
-function enforceThemeAccess() {
-    const current = document.body.dataset.theme;
-    if (currentUser && PREMIUM_THEMES.includes(current) && !isUserPremium(currentUser)) {
-        applyTheme("dark", true);
-        showToast("Your Premium theme was switched back to Simple Dark because Premium is not active.");
-    }
-}
-
 function getSavedTheme() {
     const saved = localStorage.getItem("libraryTheme");
     return THEMES[saved] ? saved : "dark";
 }
 
-function applyTheme(name, force = false) {
+function applyTheme(name) {
     if (!THEMES[name]) name = "dark";
-
-    if (!force && !canUseTheme(name)) {
-        showToast(`⭐ "${THEMES[name].label}" is a Premium theme. Upgrade to Premium to use it!`);
-        showPage("profile");
-        return;
-    }
 
     document.body.dataset.theme = name;
     document.body.classList.toggle("dark-theme", THEMES[name].dark);
@@ -2566,739 +3010,13 @@ function renderThemePicker() {
 
     const current = document.body.dataset.theme || "dark";
 
-    picker.innerHTML = Object.entries(THEMES).map(([key, theme]) => {
-        const isPremTheme = PREMIUM_THEMES.includes(key);
-        const locked = !canUseTheme(key);
-        return `
-        <button type="button" class="theme-card ${key === current ? "active" : ""} ${locked ? "locked" : ""}" style="position:relative;" onclick="applyTheme('${key}')" aria-pressed="${key === current}">
-            ${isPremTheme ? `<span class="theme-premium-tag">${locked ? "🔒" : "⭐"} Premium</span>` : ""}
+    picker.innerHTML = Object.entries(THEMES).map(([key, theme]) => `
+        <button type="button" class="theme-card ${key === current ? "active" : ""}" onclick="applyTheme('${key}')" aria-pressed="${key === current}">
             <span class="theme-swatch swatch-${key}"><span>${theme.icon}</span></span>
             <strong>${theme.label}</strong>
             <small>${theme.desc}</small>
         </button>
-    `;
-    }).join("");
-}
-
-const REWARDS_KEY = "libraryRewards";
-const XP_PER_LEVEL = 100;
-const QUIZ_DAILY_XP_CAP = 25;
-const QUIZ_XP_PER_ANSWER = 5;
-
-let quizState = null;
-let rouletteBookId = null;
-
-const CHALLENGES = [
-    { id: "borrow", icon: "📖", title: "Borrow a book",     desc: "Borrow 1 book this week",     goal: 1, xp: 20, metric: "borrowCount" },
-    { id: "return", icon: "🔄", title: "Return a book",     desc: "Return 1 book this week",     goal: 1, xp: 20, metric: "returnedCount" },
-    { id: "fav",    icon: "❤️", title: "Pick favorites",    desc: "Favorite 2 books this week",  goal: 2, xp: 15, metric: "favCount" },
-    { id: "rate",   icon: "⭐", title: "Leave a rating",    desc: "Rate 1 book this week",       goal: 1, xp: 15, metric: "ratingCount" }
-];
-
-const BADGES = [
-    { id: "first-borrow", icon: "📖", name: "First Chapter",   desc: "Borrow your first book",              test: m => m.borrowCount >= 1 },
-    { id: "bookworm",     icon: "🐛", name: "Bookworm",        desc: "Borrow 5 books",                      test: m => m.borrowCount >= 5 },
-    { id: "legend",       icon: "🏆", name: "Library Legend",  desc: "Borrow 15 books",                     test: m => m.borrowCount >= 15 },
-    { id: "punctual",     icon: "⏰", name: "Always on Time",  desc: "Return 3 books on or before the due date", test: m => m.onTimeReturns >= 3 },
-    { id: "explorer",     icon: "🧭", name: "Explorer",        desc: "Borrow from 3 different categories",  test: m => m.categoryCount >= 3 },
-    { id: "collector",    icon: "❤️", name: "Collector",       desc: "Have 5 favorite books",               test: m => m.favCount >= 5 },
-    { id: "critic",       icon: "⭐", name: "Critic",          desc: "Rate 3 books",                        test: m => m.ratingCount >= 3 },
-    { id: "vip",          icon: "💎", name: "VIP",             desc: "Be a Premium member",                 test: m => m.premium },
-    { id: "author",       icon: "✍️", name: "Published Author", desc: "Get approved as an author",          test: m => m.author },
-    { id: "prolific",     icon: "📚", name: "Prolific Writer", desc: "Publish 3 books",                     test: m => m.authorBooks >= 3 },
-    { id: "streak3",      icon: "🔥", name: "On Fire",         desc: "Reach a 3-day check-in streak",       test: m => m.bestStreak >= 3 },
-    { id: "streak7",      icon: "🌟", name: "Unstoppable",     desc: "Reach a 7-day check-in streak",       test: m => m.bestStreak >= 7 },
-    { id: "level5",       icon: "🎓", name: "Scholar",         desc: "Reach level 5",                       test: m => m.level >= 5 }
-];
-
-function readRewardsStore() {
-    const data = readJSON(REWARDS_KEY, {});
-    return data && typeof data === "object" && !Array.isArray(data) ? data : {};
-}
-
-function getMyRewards() {
-    const store = readRewardsStore();
-    const key = String(currentUser || "").toLowerCase();
-    const r = store[key] || {
-        xp: 0, streak: 0, bestStreak: 0, lastCheckin: "",
-        cycle: null, claimed: {}, badgesSeen: null,
-        quiz: { date: "", xp: 0 }
-    };
-    return { store, key, r };
-}
-
-function saveMyRewards(store, key, r) {
-    store[key] = r;
-    try {
-        localStorage.setItem(REWARDS_KEY, JSON.stringify(store));
-    } catch (error) {
-        console.warn("Could not save rewards:", error);
-    }
-}
-
-function getLevel(xp) {
-    return Math.floor(xp / XP_PER_LEVEL) + 1;
-}
-
-function addXP(r, amount) {
-    const before = getLevel(r.xp);
-    r.xp += amount;
-    const after = getLevel(r.xp);
-    if (after > before) {
-        showToast(`🎉 Level up! You are now level ${after}.`);
-        addNotification("Level Up!", `You reached level ${after}. Keep reading!`);
-    }
-}
-
-function getRatingCount() {
-    const key = String(currentUser || "").toLowerCase();
-    return new Set([...(userRatings[key] || []), ...(userRatings[currentUser] || [])]).size;
-}
-
-function getRewardMetrics() {
-    const mine = borrows.filter(borrow => sameUser(borrow.username, currentUser));
-    const returned = mine.filter(borrow => borrow.returned);
-    const categories = new Set(
-        mine.map(borrow => books.find(book => book.id === borrow.id)?.category).filter(Boolean)
-    );
-
-    return {
-        borrowCount: mine.length,
-        returnedCount: returned.length,
-        onTimeReturns: returned.filter(borrow => borrow.returnedOn && borrow.returnedOn <= borrow.dueDate).length,
-        favCount: favorites.length,
-        ratingCount: getRatingCount(),
-        categoryCount: categories.size,
-        premium: isUserPremium(currentUser),
-        author: isApprovedAuthor(currentUser),
-        authorBooks: books.filter(book => book.uploadedBy && sameUser(book.uploadedBy, currentUser)).length
-    };
-}
-
-function getWeekStart(dateString) {
-    const [year, month, day] = String(dateString).split("-").map(Number);
-    const date = new Date(year, month - 1, day);
-    const sinceMonday = (date.getDay() + 6) % 7;
-    return formatLocalDate(new Date(year, month - 1, day - sinceMonday));
-}
-
-function ensureCycle(r, metrics) {
-    const weekStart = getWeekStart(today());
-    if (!r.cycle || r.cycle.weekStart !== weekStart) {
-        r.cycle = {
-            weekStart,
-            base: {
-                borrow: metrics.borrowCount,
-                return: metrics.returnedCount,
-                fav: metrics.favCount,
-                rate: metrics.ratingCount
-            }
-        };
-        r.claimed = {};
-    }
-}
-
-function getChallengeProgress(challenge, r, metrics) {
-    const base = r.cycle?.base?.[challenge.id] || 0;
-    return Math.min(challenge.goal, Math.max(0, metrics[challenge.metric] - base));
-}
-
-function evaluateBadges(r, ctx) {
-    const earned = BADGES.filter(badge => badge.test(ctx)).map(badge => badge.id);
-
-    if (!Array.isArray(r.badgesSeen)) {
-        r.badgesSeen = earned.slice();
-        return earned;
-    }
-
-    const fresh = earned.filter(id => !r.badgesSeen.includes(id));
-    fresh.forEach(id => {
-        const badge = BADGES.find(item => item.id === id);
-        r.badgesSeen.push(id);
-        if (badge) {
-            showToast(`🏅 New badge: ${badge.icon} ${badge.name}!`);
-            addNotification("New Badge Earned!", `${badge.icon} ${badge.name}: ${badge.desc}`);
-        }
-    });
-
-    return earned;
-}
-
-function dailyCheckIn() {
-    if (!currentUser) return;
-    const { store, key, r } = getMyRewards();
-
-    if (r.lastCheckin === today()) {
-        showToast("You already checked in today. Come back tomorrow!");
-        return;
-    }
-
-    r.streak = r.lastCheckin === addDays(today(), -1) ? (r.streak || 0) + 1 : 1;
-    r.bestStreak = Math.max(r.bestStreak || 0, r.streak);
-    r.lastCheckin = today();
-
-    const reward = 10 + Math.min(r.streak - 1, 6) * 2;
-    addXP(r, reward);
-    saveMyRewards(store, key, r);
-
-    showToast(`✅ Checked in! Streak: ${r.streak} day${r.streak > 1 ? "s" : ""} · +${reward} XP`);
-    renderRewardsPage();
-}
-
-function claimChallenge(id) {
-    const challenge = CHALLENGES.find(item => item.id === id);
-    if (!challenge || !currentUser) return;
-
-    const { store, key, r } = getMyRewards();
-    const metrics = getRewardMetrics();
-    ensureCycle(r, metrics);
-
-    if (r.claimed[id]) return;
-    if (getChallengeProgress(challenge, r, metrics) < challenge.goal) {
-        showToast("Finish the challenge first!");
-        return;
-    }
-
-    r.claimed[id] = true;
-    addXP(r, challenge.xp);
-    saveMyRewards(store, key, r);
-
-    showToast(`🎁 Challenge complete! +${challenge.xp} XP`);
-    renderRewardsPage();
-}
-
-function spinRoulette() {
-    const pool = books.filter(book =>
-        (Number(book.available) || 0) > 0 && (!book.isPremium || isUserPremium(currentUser))
-    );
-
-    if (!pool.length) {
-        showToast("No books are available right now.");
-        return;
-    }
-
-    const display = document.getElementById("rouletteDisplay");
-    const button = document.getElementById("rouletteBtn");
-    if (button) button.disabled = true;
-
-    let ticks = 0;
-    const timer = setInterval(() => {
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        if (display) display.textContent = "📚 " + pick.title;
-
-        ticks += 1;
-        if (ticks >= 10) {
-            clearInterval(timer);
-            rouletteBookId = pick.id;
-            renderRewardsPage();
-        }
-    }, 90);
-}
-
-function shuffleArray(list) {
-    const copy = list.slice();
-    for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
-}
-
-function newQuizQuestion() {
-    const pool = books.filter(book => book.author && !book.isPremium);
-    const authors = [...new Set(pool.map(book => book.author))];
-
-    if (authors.length < 4) {
-        showToast("Not enough books in the library for a quiz yet.");
-        return;
-    }
-
-    const book = pool[Math.floor(Math.random() * pool.length)];
-    const wrong = shuffleArray(authors.filter(name => name !== book.author)).slice(0, 3);
-
-    quizState = {
-        title: book.title,
-        correct: book.author,
-        options: shuffleArray([book.author, ...wrong]),
-        picked: null,
-        message: ""
-    };
-
-    renderRewardsPage();
-}
-
-function answerQuiz(index) {
-    if (!quizState || quizState.picked !== null) return;
-
-    const choice = quizState.options[index];
-    quizState.picked = index;
-
-    if (choice === quizState.correct) {
-        const { store, key, r } = getMyRewards();
-        if (!r.quiz || r.quiz.date !== today()) r.quiz = { date: today(), xp: 0 };
-
-        if (r.quiz.xp < QUIZ_DAILY_XP_CAP) {
-            const gain = Math.min(QUIZ_XP_PER_ANSWER, QUIZ_DAILY_XP_CAP - r.quiz.xp);
-            r.quiz.xp += gain;
-            addXP(r, gain);
-            quizState.message = `✅ Correct! +${gain} XP`;
-        } else {
-            quizState.message = "✅ Correct! (You hit today's quiz XP limit, but keep playing for fun.)";
-        }
-        saveMyRewards(store, key, r);
-    } else {
-        quizState.message = `❌ Not quite. The answer was ${quizState.correct}.`;
-    }
-
-    renderRewardsPage();
-}
-
-function renderRewardsPage() {
-    const root = document.getElementById("rewardsContent");
-    const strip = document.getElementById("profileBadges");
-    if (!currentUser || (!root && !strip)) return;
-
-    const { store, key, r } = getMyRewards();
-    const metrics = getRewardMetrics();
-    ensureCycle(r, metrics);
-
-    const level = getLevel(r.xp);
-    const ctx = { ...metrics, bestStreak: r.bestStreak || 0, level };
-    const earned = evaluateBadges(r, ctx);
-    saveMyRewards(store, key, r);
-
-    if (strip) {
-        const chips = BADGES.filter(badge => earned.includes(badge.id)).map(badge =>
-            `<span class="badge-chip" title="${escapeHTML(badge.desc)}">${badge.icon} ${escapeHTML(badge.name)}</span>`
-        ).join("");
-
-        strip.innerHTML = (chips || '<p class="empty">No badges yet. Complete challenges to earn some!</p>') +
-            `<button type="button" class="text-btn" onclick="showPage('rewards')">See all badges →</button>`;
-    }
-
-    if (!root) return;
-
-    const xpInLevel = r.xp % XP_PER_LEVEL;
-    const checkedInToday = r.lastCheckin === today();
-    const streakIsAlive = r.lastCheckin === today() || r.lastCheckin === addDays(today(), -1);
-    const shownStreak = streakIsAlive ? (r.streak || 0) : 0;
-
-    const challengeHTML = CHALLENGES.map(challenge => {
-        const progress = getChallengeProgress(challenge, r, metrics);
-        const done = progress >= challenge.goal;
-        const claimed = !!r.claimed[challenge.id];
-
-        return `
-            <div class="rw-card ${claimed ? "claimed" : ""}">
-                <div class="rw-card-top">
-                    <span class="rw-icon">${challenge.icon}</span>
-                    <div class="rw-card-text">
-                        <strong>${escapeHTML(challenge.title)}</strong>
-                        <small>${escapeHTML(challenge.desc)}</small>
-                    </div>
-                    <span class="rw-xp">+${challenge.xp} XP</span>
-                </div>
-                <div class="rw-bar"><div class="rw-fill" style="width:${(progress / challenge.goal) * 100}%"></div></div>
-                <div class="rw-card-bottom">
-                    <small>${progress}/${challenge.goal}</small>
-                    ${claimed
-                        ? '<span class="rw-claimed">✅ Claimed</span>'
-                        : `<button type="button" class="primary-btn" ${done ? "" : "disabled"} onclick="claimChallenge('${challenge.id}')">${done ? "Claim reward" : "In progress"}</button>`}
-                </div>
-            </div>
-        `;
-    }).join("");
-
-    const badgeHTML = BADGES.map(badge => {
-        const has = earned.includes(badge.id);
-        return `
-            <div class="badge-item ${has ? "earned" : "locked"}" title="${escapeHTML(badge.desc)}">
-                <span class="badge-icon">${has ? badge.icon : "🔒"}</span>
-                <strong>${escapeHTML(badge.name)}</strong>
-                <small>${escapeHTML(badge.desc)}</small>
-            </div>
-        `;
-    }).join("");
-
-    const rouletteBook = rouletteBookId ? books.find(book => book.id === rouletteBookId) : null;
-    const rouletteHTML = `
-        <div class="rw-game-screen" id="rouletteDisplay">
-            ${rouletteBook ? `📚 ${escapeHTML(rouletteBook.title)}` : "Press spin and let fate pick your next read!"}
-        </div>
-        ${rouletteBook ? `
-            <p class="rw-game-sub">by ${escapeHTML(rouletteBook.author)} · ★ ${rouletteBook.rating || "—"} · ${Number(rouletteBook.available) || 0} available</p>
-            <div class="rw-game-actions">
-                <button type="button" class="secondary-btn" onclick="viewBook('${escapeHTML(rouletteBook.id)}')">View</button>
-                <button type="button" class="primary-btn" onclick="borrowBook('${escapeHTML(rouletteBook.id)}')">Borrow it</button>
-            </div>` : ""}
-        <button type="button" id="rouletteBtn" class="primary-btn" onclick="spinRoulette()">🎲 ${rouletteBook ? "Spin again" : "Spin"}</button>
-    `;
-
-    const quizToday = r.quiz && r.quiz.date === today() ? r.quiz.xp : 0;
-    let quizHTML;
-    if (!quizState) {
-        quizHTML = `
-            <div class="rw-game-screen">Who wrote which book? Test yourself!</div>
-            <button type="button" class="primary-btn" onclick="newQuizQuestion()">▶ Start quiz</button>
-        `;
-    } else {
-        const answered = quizState.picked !== null;
-        quizHTML = `
-            <div class="rw-game-screen">Who wrote <em>${escapeHTML(quizState.title)}</em>?</div>
-            <div class="quiz-options">
-                ${quizState.options.map((option, index) => {
-                    let state = "";
-                    if (answered && option === quizState.correct) state = "correct";
-                    else if (answered && index === quizState.picked) state = "wrong";
-                    return `<button type="button" class="quiz-option ${state}" ${answered ? "disabled" : ""} onclick="answerQuiz(${index})">${escapeHTML(option)}</button>`;
-                }).join("")}
-            </div>
-            ${answered ? `<p class="rw-game-sub">${escapeHTML(quizState.message)}</p>
-                <button type="button" class="primary-btn" onclick="newQuizQuestion()">Next question →</button>` : ""}
-        `;
-    }
-
-    root.innerHTML = `
-        <div class="panel rw-level-panel">
-            <div class="rw-level-badge">Lv ${level}</div>
-            <div class="rw-level-info">
-                <h3>${escapeHTML(currentUser)}</h3>
-                <div class="rw-bar big"><div class="rw-fill" style="width:${xpInLevel}%"></div></div>
-                <small>${xpInLevel}/${XP_PER_LEVEL} XP to level ${level + 1} · ${r.xp} XP total</small>
-            </div>
-            <div class="rw-checkin">
-                <div class="rw-streak">🔥 ${shownStreak} day streak</div>
-                <button type="button" class="primary-btn" ${checkedInToday ? "disabled" : ""} onclick="dailyCheckIn()">${checkedInToday ? "Checked in ✅" : "Daily check-in"}</button>
-            </div>
-        </div>
-
-        <div class="panel">
-            <h3>🎯 Weekly Challenges</h3>
-            <p class="rw-sub">New challenges start every Monday (next reset: ${addDays(r.cycle.weekStart, 7)}).</p>
-            <div class="rw-grid">${challengeHTML}</div>
-        </div>
-
-        <div class="panel">
-            <h3>🏅 Badges <small class="rw-sub">${earned.length}/${BADGES.length} earned</small></h3>
-            <div class="badge-grid">${badgeHTML}</div>
-        </div>
-
-        <div class="rw-games">
-            <div class="panel">
-                <h3>🎲 Book Roulette</h3>
-                ${rouletteHTML}
-            </div>
-            <div class="panel">
-                <h3>🧠 Guess the Author</h3>
-                <p class="rw-sub">${QUIZ_XP_PER_ANSWER} XP per correct answer · ${quizToday}/${QUIZ_DAILY_XP_CAP} XP earned today</p>
-                ${quizHTML}
-            </div>
-        </div>
-    `;
-}
-
-function renderAuthorsPage() {
-    const element = document.getElementById("authorList");
-    if (!element) return;
-
-    const map = new Map();
-    const entryFor = name => {
-        const k = String(name).trim().toLowerCase();
-        if (!map.has(k)) map.set(k, { name: String(name).trim(), books: [], status: "", bio: "" });
-        return map.get(k);
-    };
-
-    getSavedAccounts()
-        .filter(account => ["pending", "approved"].includes(account.authorStatus) && !account.banned)
-        .forEach(account => {
-            const entry = entryFor(account.penName || account.username);
-            entry.status = account.authorStatus;
-            entry.bio = account.authorBio || "";
-        });
-
-    books.forEach(book => {
-        if (book.author) entryFor(book.author).books.push(book);
-    });
-
-    const authors = [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
-
-    element.innerHTML = authors.map(author => {
-        const count = author.books.length;
-        const rated = author.books.filter(book => Number(book.rating) > 0);
-        const avg = rated.length ? rated.reduce((sum, book) => sum + Number(book.rating), 0) / rated.length : 0;
-
-        const tags = [];
-        if (author.status === "approved") tags.push("✍️ Verified Author");
-        if (author.status === "pending") tags.push("⏳ Pending approval");
-        if (count >= 3) tags.push("📚 Prolific");
-        if (avg >= 4.5) tags.push("⭐ Top Rated");
-
-        return `
-            <div class="author-card" data-author="${escapeHTML(author.name)}">
-                <h4>${escapeHTML(author.name)}</h4>
-                <div class="meta">${count} book${count === 1 ? "" : "s"}</div>
-                ${author.bio ? `<p class="author-bio">${escapeHTML(author.bio.slice(0, 110))}${author.bio.length > 110 ? "…" : ""}</p>` : ""}
-                <div class="author-tags">${tags.map(tag => `<span>${tag}</span>`).join("")}</div>
-            </div>
-        `;
-    }).join("") || '<p class="empty">No authors yet</p>';
-}
-
-document.getElementById("authorList")?.addEventListener("click", event => {
-    const card = event.target.closest(".author-card");
-    if (!card) return;
-
-    const name = card.dataset.author;
-    const hasBooks = books.some(book => String(book.author || "").toLowerCase() === name.toLowerCase());
-
-    if (hasBooks) {
-        filterByAuthor(name);
-    } else {
-        showToast(`${name} hasn't published any books yet.`);
-    }
-});
-
-const RESET_LOCK_KEY = "libraryResetLocks";
-const RESET_MAX_FAILS = 5;
-const RESET_LOCK_MINUTES = 5;
-let forgotUsername = "";
-
-function normalizeRecoveryAnswer(text) {
-    return String(text || "").trim().toLowerCase().replace(/\s+/g, " ");
-}
-
-function resetForgotForm() {
-    forgotUsername = "";
-    document.getElementById("forgotForm")?.reset();
-    document.getElementById("forgotStep1")?.classList.remove("hidden");
-    document.getElementById("forgotStep2")?.classList.add("hidden");
-    const error = document.getElementById("forgotError");
-    if (error) error.textContent = "";
-}
-
-function findForgotAccount() {
-    const error = document.getElementById("forgotError");
-    if (error) error.textContent = "";
-
-    const name = (document.getElementById("forgotUsername")?.value || "").trim();
-
-    if (!name) {
-        error.textContent = "Enter your username.";
-        return;
-    }
-
-    if (isBuiltInAdmin(name)) {
-        error.textContent = "Built-in admin passwords can't be reset here.";
-        return;
-    }
-
-    const account = getSavedAccounts().find(item => sameUser(item.username, name));
-
-    if (!account) {
-        error.textContent = "No account found with that username.";
-        return;
-    }
-
-    if (account.banned) {
-        error.textContent = "This account has been banned. Contact a library administrator.";
-        return;
-    }
-
-    if (!account.recoveryQuestion || !account.recoveryAnswerHash) {
-        error.textContent = "This account has no recovery question yet. Ask a library admin to reset your password.";
-        return;
-    }
-
-    forgotUsername = account.username;
-    document.getElementById("forgotQuestionText").textContent = account.recoveryQuestion;
-    document.getElementById("forgotStep1")?.classList.add("hidden");
-    document.getElementById("forgotStep2")?.classList.remove("hidden");
-    document.getElementById("forgotAnswer")?.focus();
-}
-
-async function submitForgotReset(event) {
-    event.preventDefault();
-
-    if (!forgotUsername) {
-        findForgotAccount();
-        return;
-    }
-
-    const error = document.getElementById("forgotError");
-    error.textContent = "";
-
-    const answer = normalizeRecoveryAnswer(document.getElementById("forgotAnswer")?.value);
-    const newPw = document.getElementById("forgotNewPassword")?.value || "";
-    const confirmPw = document.getElementById("forgotConfirmPassword")?.value || "";
-
-    const locks = readJSON(RESET_LOCK_KEY, {});
-    const lockKey = forgotUsername.toLowerCase();
-    const lock = locks[lockKey] || { fails: 0, until: 0 };
-
-    if (lock.until > Date.now()) {
-        const minutes = Math.ceil((lock.until - Date.now()) / 60000);
-        error.textContent = `Too many wrong answers. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`;
-        return;
-    }
-
-    if (!answer) {
-        error.textContent = "Enter your answer.";
-        return;
-    }
-
-    if (newPw.length < 8) {
-        error.textContent = "New password must be at least 8 characters.";
-        return;
-    }
-
-    if (newPw !== confirmPw) {
-        error.textContent = "New passwords do not match.";
-        return;
-    }
-
-    try {
-        const accounts = getSavedAccounts();
-        const account = accounts.find(item => sameUser(item.username, forgotUsername));
-
-        if (!account) {
-            error.textContent = "Account not found.";
-            return;
-        }
-
-        const correct = await hashPassword(answer, account.recoverySalt) === account.recoveryAnswerHash;
-
-        if (!correct) {
-            lock.fails += 1;
-
-            if (lock.fails >= RESET_MAX_FAILS) {
-                lock.until = Date.now() + RESET_LOCK_MINUTES * 60000;
-                lock.fails = 0;
-                error.textContent = `Too many wrong answers. Try again in ${RESET_LOCK_MINUTES} minutes.`;
-            } else {
-                error.textContent = `Wrong answer. ${RESET_MAX_FAILS - lock.fails} tries left.`;
-            }
-
-            locks[lockKey] = lock;
-            localStorage.setItem(RESET_LOCK_KEY, JSON.stringify(locks));
-            return;
-        }
-
-        const salt = generatePasswordSalt();
-        account.passwordHash = await hashPassword(newPw, salt);
-        account.salt = salt;
-        localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
-
-        delete locks[lockKey];
-        localStorage.setItem(RESET_LOCK_KEY, JSON.stringify(locks));
-
-        const name = forgotUsername;
-        resetForgotForm();
-        showAuthForm("login");
-
-        const usernameInput = document.getElementById("username");
-        if (usernameInput) usernameInput.value = name;
-        if (loginError) loginError.textContent = "Password reset! Log in with your new password.";
-    } catch (err) {
-        error.textContent = err.message || "Could not reset password.";
-    }
-}
-
-async function saveRecoveryQuestion(event) {
-    event.preventDefault();
-
-    const error = document.getElementById("recoveryError");
-    if (error) error.textContent = "";
-
-    if (isBuiltInAdmin(currentUser)) {
-        error.textContent = "Built-in admin accounts can't use password recovery.";
-        return;
-    }
-
-    const question = document.getElementById("settingsRecoveryQuestion")?.value || "";
-    const answer = normalizeRecoveryAnswer(document.getElementById("settingsRecoveryAnswer")?.value);
-    const currentPw = document.getElementById("recoveryCurrentPassword")?.value || "";
-
-    if (!question || answer.length < 2) {
-        error.textContent = "Pick a question and type an answer (at least 2 characters).";
-        return;
-    }
-
-    try {
-        const accounts = getSavedAccounts();
-        const account = accounts.find(item => sameUser(item.username, currentUser));
-
-        if (!account) {
-            error.textContent = "Account not found.";
-            return;
-        }
-
-        if (await hashPassword(currentPw, account.salt) !== account.passwordHash) {
-            error.textContent = "Current password is incorrect.";
-            return;
-        }
-
-        account.recoveryQuestion = question;
-        account.recoverySalt = generatePasswordSalt();
-        account.recoveryAnswerHash = await hashPassword(answer, account.recoverySalt);
-        localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
-
-        document.getElementById("recoveryForm")?.reset();
-        showToast("Recovery question saved!");
-        renderRecoveryStatus();
-    } catch (err) {
-        error.textContent = err.message || "Could not save recovery question.";
-    }
-}
-
-function renderRecoveryStatus() {
-    const element = document.getElementById("recoveryStatus");
-    if (!element || !currentUser) return;
-
-    if (isBuiltInAdmin(currentUser)) {
-        element.textContent = "Built-in admin accounts can't use password recovery.";
-        return;
-    }
-
-    const account = getCurrentAccount();
-    element.textContent = account?.recoveryQuestion
-        ? `✅ Recovery question set: ${account.recoveryQuestion}`
-        : "⚠️ No recovery question yet. Add one so you can reset your password if you forget it.";
-}
-
-async function adminResetPassword(username) {
-    if (!isLibrarianOrAdmin(currentUser) || isBuiltInAdmin(username) || sameUser(username, currentUser)) return;
-
-    const accounts = getSavedAccounts();
-    const account = accounts.find(item => sameUser(item.username, username));
-    if (!account) return;
-
-    const callerIsAdmin = isBuiltInAdmin(currentUser) || getCurrentAccount()?.role === "admin";
-
-    if (account.role !== "user" && !callerIsAdmin) {
-        alert("Only admins can reset a staff account's password.");
-        return;
-    }
-
-    if (!confirm(`Reset the password for ${account.username}? They will get a temporary password.`)) return;
-
-    try {
-        const number = crypto.getRandomValues(new Uint32Array(1))[0] % 1000000;
-        const temp = "Lib" + String(number).padStart(6, "0") + "x";
-
-        const salt = generatePasswordSalt();
-        account.passwordHash = await hashPassword(temp, salt);
-        account.salt = salt;
-        localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
-
-        const locks = readJSON(RESET_LOCK_KEY, {});
-        delete locks[account.username.toLowerCase()];
-        localStorage.setItem(RESET_LOCK_KEY, JSON.stringify(locks));
-
-        addNotification("Password reset", `You reset the password for ${account.username}.`);
-        prompt(`Temporary password for ${account.username}. Copy it and send it to them. They should change it in Settings → Security.`, temp);
-    } catch (err) {
-        alert(err.message || "Could not reset the password.");
-    }
+    `).join("");
 }
 
 function getAccountByName(username) {
@@ -3350,6 +3068,10 @@ function validatePenName(name, ownUsername = "") {
 
     if (clean.length < 2 || clean.length > 40) {
         return "Pen name must be 2 to 40 characters.";
+    }
+
+    if (/\p{N}/u.test(clean)) {
+        return "Pen name cannot contain numbers.";
     }
 
     const lower = clean.toLowerCase();
@@ -3534,6 +3256,8 @@ function reviewAuthorApplication(username, decision) {
 
     account.authorStatus = decision;
     account.authorNoticeSeen = false;
+
+    recordAdminAction(`Author application ${decision}`, `${account.username} (${account.penName || "no pen name"}).`);
 
     localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(accounts));
     renderAll();
@@ -4239,6 +3963,7 @@ const ADMIN_SEEN_KEY = "libraryAdminLastSeen";
 const ADMIN_PREF_KEY = "libraryAdminChatStatus";
 const ADMIN_ONLINE_WINDOW_MS = 30000;
 const ADMIN_HEARTBEAT_MS = 10000;
+const AWAY_NOTICE_GAP_MS = 5 * 60 * 1000;
 
 const CHAT_QUICK_OPTIONS = [
     {
@@ -4275,7 +4000,7 @@ const CHAT_QUICK_OPTIONS = [
         id: "password",
         label: "Password or account problem",
         keywords: ["password", "login", "log in", "account", "username", "banned"],
-        reply: "You can change your password in Settings → Security (you'll need your current password). You can also change your username and email in Settings.\n\nForgot your password? Use \"Forgot password?\" on the login page and answer your recovery question. Add one in Settings → Security if you haven't yet.\n\nIf you're locked out or the account was banned by mistake, choose \"Talk to a person\" and include your username."
+        reply: "You can change your password in Settings → Security (you'll need your current password). You can also change your username and email in Settings.\n\nIf you're locked out or the account was banned by mistake, choose \"Talk to a person\" and include your username."
     },
     {
         id: "author",
@@ -4459,11 +4184,6 @@ function endChatSession() {
     clearInterval(adminHeartbeatTimer);
     chatRefreshTimer = null;
     adminHeartbeatTimer = null;
-    if (currentUser) {
-        fetch("/api/reset", { method: "POST" }).catch(error => {
-            console.warn("Could not clear the AI assistant conversation:", error);
-        });
-    }
 
     if (currentUser && isLibrarianOrAdmin(currentUser)) {
         try {
@@ -4490,7 +4210,7 @@ function chatBubbleHTML(message, viewer) {
     const mine = message.from === viewer;
 
     let label;
-    if (message.from === "bot") label = "🤖 Library AI Assistant";
+    if (message.from === "bot") label = "💬 Help Center";
     else if (message.from === "admin") label = viewer === "admin" ? "You" : "🛡️ Support Team";
     else label = viewer === "user" ? "You" : "Member";
 
@@ -4548,7 +4268,7 @@ function renderChatWidget(force = false) {
 
     const presence = document.getElementById("chatPresence");
     if (presence) {
-        presence.textContent = online ? "🟢 Support team online" : "✨ AI assistant ready";
+        presence.textContent = online ? "🟢 Admin is online" : "🟡 Admin is away · quick help available";
         presence.className = `chat-presence ${online ? "online" : "away"}`;
     }
 
@@ -4562,15 +4282,15 @@ function renderChatWidget(force = false) {
     lastChatSig = signature;
 
     const greeting = online
-        ? `Hi ${escapeHTML(currentUser)}! 👋 I'm your Library AI Assistant. Ask me a question, or send a message for the support team.`
-        : `Hi ${escapeHTML(currentUser)}! 👋 I'm your Library AI Assistant. Ask me anything about the library. If you need a person, choose that option and I'll notify the support team.`;
+        ? `Hi ${escapeHTML(currentUser)}! 👋 Support is online. Pick an issue type above, add a Book ID if you have one, then send your message.`
+        : `Hi ${escapeHTML(currentUser)}! 👋 Support is away. Choose an issue type, use a quick help option below, or leave a ticket message and we'll reply when back.`;
 
     const messagesElement = document.getElementById("chatMessages");
 
     if (messagesElement) {
         messagesElement.innerHTML = `
             <div class="chat-msg theirs from-bot">
-                <span class="chat-msg-label">🤖 Library AI Assistant</span>
+                <span class="chat-msg-label">💬 Help Center</span>
                 <div class="chat-bubble">${greeting}</div>
             </div>
             ${messages.map(message => chatBubbleHTML(message, "user")).join("")}
@@ -4649,33 +4369,15 @@ function botReply(username, text, optionId) {
         pushChatMessage(username, "bot", option.reply);
         if (option.flagHuman) flagChatForAdmin(username);
     } else {
-        requestAssistantReply(username, text);
-        return;
-    }
+        loadChats();
+        const chat = getChat(username, true);
 
-    if (sameUser(currentUser, username)) renderChatWidget(true);
-}
-
-async function requestAssistantReply(username, text) {
-    try {
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: text })
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "The assistant request failed.");
-        if (typeof result.reply !== "string" || !result.reply.trim()) {
-            throw new Error("The assistant returned an empty response.");
+        if (Date.now() - (chat.lastAwayNoticeAt || 0) > AWAY_NOTICE_GAP_MS) {
+            chat.lastAwayNoticeAt = Date.now();
+            saveChats();
+            pushChatMessage(username, "bot", "Thanks for your message! The admin is away right now, but I saved it and they'll reply when they're back. In the meantime, one of the quick options below might help.");
         }
-        pushChatMessage(username, "bot", result.reply);
-    } catch (error) {
-        console.error("AI assistant request failed:", error);
-        pushChatMessage(
-            username,
-            "bot",
-            "The AI assistant is temporarily unavailable. Your message has been saved for the support team."
-        );
+
         flagChatForAdmin(username);
     }
 
@@ -4810,8 +4512,171 @@ function clearSupportChat(username) {
     renderSupportPage(true);
 }
 
+function renderAiChatMessages() {
+    const container = document.getElementById("aiChatMessages");
+    if (!container) return;
+
+    container.replaceChildren();
+    aiChatHistory.forEach(message => {
+        const bubble = document.createElement("div");
+        bubble.className = `ai-chat-message ${message.role === "user" ? "user" : "assistant"}`;
+
+        const label = document.createElement("span");
+        label.className = "ai-chat-label";
+        label.textContent = message.role === "user" ? "You" : "AI Assistant";
+
+        const content = document.createElement("p");
+        content.textContent = message.content;
+        bubble.append(label, content);
+        if (Array.isArray(message.results)) {
+            message.results.forEach(result => {
+                if (!result || typeof result.title !== "string" || typeof result.url !== "string") return;
+                const card = document.createElement("article");
+                card.className = "ai-recommendation-card";
+                const link = document.createElement("a");
+                link.className = "ai-result-link";
+                link.href = result.url;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.textContent = result.title;
+                card.appendChild(link);
+                if (typeof result.snippet === "string" && result.snippet) {
+                    const snippet = document.createElement("p");
+                    snippet.textContent = result.snippet;
+                    card.appendChild(snippet);
+                }
+                bubble.appendChild(card);
+            });
+        }
+        container.appendChild(bubble);
+    });
+    container.scrollTop = container.scrollHeight;
+}
+
+async function handleAiChatSubmit(event) {
+    event.preventDefault();
+    if (aiAssistantBusy) return;
+
+    const input = document.getElementById("aiChatInput");
+    const status = document.getElementById("aiChatStatus");
+    const button = document.getElementById("aiChatSendButton");
+    const message = input?.value.trim();
+    if (!message) return;
+
+    aiAssistantBusy = true;
+    if (button) button.disabled = true;
+    if (input) input.disabled = true;
+    if (status) status.textContent = "Searching the web with TinyFish…";
+
+    try {
+        const response = await fetch("/api/ai/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "TinyFish search could not run.");
+        const results = Array.isArray(payload.results) ? payload.results : [];
+
+        aiChatHistory = [
+            ...aiChatHistory,
+            { role: "user", content: message },
+            {
+                role: "assistant",
+                content: results.length
+                    ? `TinyFish found ${results.length} web result${results.length === 1 ? "" : "s"} for your question.`
+                    : "TinyFish did not find any results. Try a different search.",
+                results
+            }
+        ].slice(-12);
+        renderAiChatMessages();
+        if (input) input.value = "";
+        if (status) status.textContent = "";
+    } catch (error) {
+        if (status) status.textContent = error.message || "Could not reach the AI service. Check that the library server is running.";
+    } finally {
+        aiAssistantBusy = false;
+        if (button) button.disabled = false;
+        if (input) {
+            input.disabled = false;
+            input.focus();
+        }
+    }
+}
+
+async function handleAiRecommendationSubmit(event) {
+    event.preventDefault();
+    const input = document.getElementById("aiRecommendationPrompt");
+    const status = document.getElementById("aiRecommendationStatus");
+    const resultsContainer = document.getElementById("aiRecommendationResults");
+    const button = document.getElementById("aiRecommendationButton");
+    const preference = input?.value.trim();
+    if (!preference || !resultsContainer) return;
+
+    if (button) button.disabled = true;
+    if (status) status.textContent = "Searching the web for book recommendations…";
+    resultsContainer.replaceChildren();
+
+    const favoriteTitles = books.filter(book => favorites.includes(book.id)).map(book => book.title).slice(0, 5);
+    const recentTitles = recentlyViewed
+        .map(id => books.find(book => book.id === id)?.title)
+        .filter(Boolean)
+        .slice(0, 5);
+
+    try {
+        const response = await fetch("/api/ai/recommendations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                preference,
+                favorites: favoriteTitles,
+                recentlyViewed: recentTitles
+            })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "Could not get recommendations.");
+
+        const recommendations = Array.isArray(payload.recommendations) ? payload.recommendations : [];
+        const validRecommendations = recommendations.filter(item =>
+            item && typeof item.title === "string" && typeof item.url === "string"
+        ).slice(0, 8);
+
+        if (!validRecommendations.length) {
+            throw new Error("TinyFish found no book recommendations. Try describing a different topic.");
+        }
+
+        validRecommendations.forEach(result => {
+            const card = document.createElement("article");
+            card.className = "ai-recommendation-card";
+
+            const title = document.createElement("h4");
+            title.textContent = result.title;
+            const details = document.createElement("p");
+            details.className = "ai-recommendation-meta";
+            details.textContent = result.site_name || "Web search result";
+            const snippet = document.createElement("p");
+            snippet.textContent = result.snippet || "Open this result to learn more.";
+            const action = document.createElement("a");
+            action.className = "secondary-btn ai-result-link";
+            action.href = result.url;
+            action.target = "_blank";
+            action.rel = "noopener noreferrer";
+            action.textContent = "Open result";
+            card.append(title, details, snippet, action);
+            resultsContainer.appendChild(card);
+        });
+        if (status) status.textContent = `Found ${validRecommendations.length} web result${validRecommendations.length === 1 ? "" : "s"}. These may not be available in the library.`;
+    } catch (error) {
+        if (status) status.textContent = error.message || "Could not reach the AI service. Check that the library server is running.";
+    } finally {
+        if (button) button.disabled = false;
+    }
+}
+
 function initNewFeatureListeners() {
     document.getElementById("sideSettingsBtn")?.addEventListener("click", () => showPage("settings"));
+    document.getElementById("aiChatForm")?.addEventListener("submit", handleAiChatSubmit);
+    document.getElementById("aiRecommendationForm")?.addEventListener("submit", handleAiRecommendationSubmit);
 
     document.querySelectorAll('input[name="signupType"]').forEach(radio => {
         radio.addEventListener("change", updateSignupType);
@@ -5035,7 +4900,8 @@ document.getElementById("searchCategory")?.addEventListener("change", renderSear
 document.getElementById("searchYear")?.addEventListener("change", renderSearchPage);
 document.getElementById("searchAvail")?.addEventListener("change", renderSearchPage);
 
-document.getElementById("logoutBtn")?.addEventListener("click", handleLogout);
+document.getElementById("logoutBtn")?.addEventListener("click", openSignOutModal);
+document.getElementById("forgotPasswordBtn")?.addEventListener("click", openForgotPasswordModal);
 
 document.getElementById("sidePanelToggle")?.addEventListener("click", openSidePanel);
 document.getElementById("sidePanelClose")?.addEventListener("click", closeSidePanel);
@@ -5053,6 +4919,8 @@ document.addEventListener("keydown", event => {
         closeReportModal();
         closePremiumModal();
         closeDeleteAccountModal();
+        closeSignOutModal();
+        closeForgotPasswordModal();
         closeBookDetailPanel();
         closeNotifDropdown();
     }
@@ -5113,8 +4981,7 @@ setInterval(() => {
     if (currentUser) checkAuthorNotice();
 }, 4000);
 
-applyTheme(getSavedTheme(), true);
-initPasswordVisibilityToggles();
+applyTheme(getSavedTheme());
 initNewFeatureListeners();
 
 if (localStorage.getItem("libraryNotifPref") === "off") {

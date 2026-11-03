@@ -34,32 +34,7 @@
 
                 <button type="submit" class="primary-btn">Log In</button>
                 <button type="button" id="signupBtn" class="secondary-btn">Create Account</button>
-                <button type="button" class="text-btn forgot-link" onclick="showAuthForm('forgot')">Forgot password?</button>
-            </form>
-
-            <form id="forgotForm" class="hidden" onsubmit="submitForgotReset(event)">
-                <div id="forgotStep1">
-                    <label for="forgotUsername">Username</label>
-                    <input type="text" id="forgotUsername" placeholder="Enter your username" autocomplete="username">
-                    <button type="button" class="primary-btn" onclick="findForgotAccount()">Find my account</button>
-                </div>
-
-                <div id="forgotStep2" class="hidden">
-                    <p class="auth-note"><strong id="forgotQuestionText"></strong></p>
-                    <label for="forgotAnswer">Your answer</label>
-                    <input type="text" id="forgotAnswer" placeholder="Type your answer" autocomplete="off">
-
-                    <label for="forgotNewPassword">New Password (min 8 characters)</label>
-                    <input type="password" id="forgotNewPassword" placeholder="Minimum 8 characters" minlength="8" autocomplete="new-password">
-
-                    <label for="forgotConfirmPassword">Confirm New Password</label>
-                    <input type="password" id="forgotConfirmPassword" placeholder="Re-enter new password" minlength="8" autocomplete="new-password">
-
-                    <button type="submit" class="primary-btn">Reset Password</button>
-                </div>
-
-                <p id="forgotError" class="error-message"></p>
-                <button type="button" class="secondary-btn" onclick="showAuthForm('login')">Back to Login</button>
+                <button type="button" id="forgotPasswordBtn" class="text-btn forgot-password-link">Forgot password?</button>
             </form>
 
             <form id="signupForm" class="hidden">
@@ -78,11 +53,14 @@
                     </label>
                 </div>
 
-                <label for="signupUsername">Username</label>
-                <input type="text" id="signupUsername" placeholder="Choose username" pattern="[^0-9]+" title="Username cannot contain numbers." required>
+                <label for="signupUsername">Username </label>
+                <input type="text" id="signupUsername" placeholder="Letters only" maxlength="40" required>
+
+                <label for="signupEmail">Recovery Email</label>
+                <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email" required>
 
                 <div id="authorSignupFields" class="hidden">
-                    <label for="signupPenName">Pen Name (shown on your books)</label>
+                    <label for="signupPenName">Pen Name (no numbers)</label>
                     <input type="text" id="signupPenName" placeholder="Your author name" maxlength="40">
 
                     <label for="signupAuthorBio">About You (short bio)</label>
@@ -91,15 +69,11 @@
                     <p class="auth-note">An admin reviews every author application. You can log in right away as a reader, and the <strong>My Books</strong> upload page unlocks once you're approved.</p>
                 </div>
 
-                <label for="signupPassword">Password (min 8 characters)</label>
-                <input type="password" id="signupPassword" placeholder="Minimum 8 characters" minlength="8" pattern="\S+" title="Password cannot contain spaces." required>
+                <label for="signupPassword">Password (8+ characters; symbols _ @ - # ? ! only)</label>
+                <input type="password" id="signupPassword" placeholder="8+ characters; allowed symbols: _ @ - # ? !" minlength="8" required>
 
                 <label for="signupPasswordConfirm">Confirm Password</label>
-                <input type="password" id="signupPasswordConfirm" placeholder="Re-enter password" minlength="8" pattern="\S+" title="Password cannot contain spaces." required>
-
-                <label for="signupRecoveryQuestion">Recovery question (to reset your password later)</label>
-                <select id="signupRecoveryQuestion" required><option value="">Choose a question...</option><option value="What was the name of your first pet?">What was the name of your first pet?</option><option value="In what city were you born?">In what city were you born?</option><option value="What is your favorite book?">What is your favorite book?</option><option value="What was your childhood nickname?">What was your childhood nickname?</option><option value="What was the name of your first school?">What was the name of your first school?</option></select>
-                <input type="text" id="signupRecoveryAnswer" placeholder="Your answer" autocomplete="off" required>
+                <input type="password" id="signupPasswordConfirm" placeholder="Re-enter password" minlength="8" required>
 
                 <p id="signupError" class="error-message"></p>
 
@@ -132,7 +106,6 @@
                         <div class="notif-header">
                             <h3>Notifications</h3>
                             <button id="markReadBtn" class="text-btn">Mark all read</button>
-                            <button class="text-btn" onclick="clearAllNotifications()">Clear all</button>
                         </div>
 
                         <div id="notifList" class="notif-list">
@@ -166,13 +139,14 @@
                     <button class="side-nav-item" data-page="books">📚 Books</button>
                     <button class="side-nav-item" data-page="authors">✍️ Authors</button>
                     <button class="side-nav-item" data-page="borrow">🔄 Borrow</button>
+                    <button class="side-nav-item" data-page="yourBooks">📖 Your Books</button>
                     <button class="side-nav-item" data-page="cart">🛒 Cart</button>
                     <button class="side-nav-item" data-page="search">🔍 Search</button>
+                    <button class="side-nav-item" data-page="aiAssistant">✨ AI Assistant</button>
                     <button class="side-nav-item author-only hidden" data-page="myBooks">📤 My Books</button>
                     <button class="side-nav-item" data-page="messages">💬 Messages <span id="messagesNavBadge" class="nav-badge hidden">0</span></button>
                     <button class="side-nav-item" data-page="techSupport">🛠️ Tech Support</button>
                     <button class="side-nav-item" data-page="profile">👤 Profile</button>
-                    <button class="side-nav-item" data-page="rewards">🏅 Rewards</button>
                     <button class="side-nav-item admin-only hidden" data-page="support">💬 Support Inbox <span id="supportNavBadge" class="nav-badge hidden">0</span></button>
                     <button class="side-nav-item admin-only hidden" data-page="admin">🛠️ Admin</button>
                 </nav>
@@ -180,7 +154,7 @@
                 <div class="side-controls">
                     <button id="sideSettingsBtn" class="side-btn">
                         <span>⚙️</span>
-                        <span>Settings</span>
+                        <span>Settings &amp; Password</span>
                     </button>
                     <button id="logoutBtn" class="side-btn danger">Log Out</button>
                 </div>
@@ -336,6 +310,15 @@
                 </div>
             </section>
 
+            <section id="yourBooks" class="page">
+                <div class="panel your-books-panel">
+                    <div class="panel-heading">
+                        <div><h3>📖 Your Books</h3><p>Read books you own or currently have borrowed.</p></div>
+                    </div>
+                    <div id="yourBooksGrid" class="inventory-grid"></div>
+                </div>
+            </section>
+
             <section id="cart" class="page">
                 <div class="panel">
                     <div class="panel-heading">
@@ -478,18 +461,9 @@
                 </div>
 
                 <div class="panel">
-                    <h3>🏅 Badges</h3>
-                    <div id="profileBadges" class="badge-strip"></div>
-                </div>
-
-                <div class="panel">
                     <h3>❤️ Favorites</h3>
                     <div class="book-cards" id="favoritesList"></div>
                 </div>
-            </section>
-
-            <section id="rewards" class="page">
-                <div id="rewardsContent"></div>
             </section>
 
             <section id="settings" class="page">
@@ -515,38 +489,20 @@
                 </div>
 
                 <div class="panel">
-                    <h3>🔒 Security</h3>
+                    <h3>🔒 Change Password</h3>
                     <p style="margin-bottom: 16px;">Update your password to keep your account safe.</p>
                     <form id="passwordForm" onsubmit="changePassword(event)" style="max-width: 500px;">
                         <label for="currentPassword">Current Password</label>
                         <input type="password" id="currentPassword" placeholder="Enter current password" required>
 
-                        <label for="newPassword">New Password (min 8 characters)</label>
+                        <label for="newPassword">New Password (8+ characters; symbols _ @ - # ? ! only)</label>
                         <input type="password" id="newPassword" placeholder="Minimum 8 characters" minlength="8" required>
 
                         <label for="confirmNewPassword">Confirm New Password</label>
                         <input type="password" id="confirmNewPassword" placeholder="Re-enter new password" minlength="8" required>
 
                         <p id="passwordError" class="error-message"></p>
-                        <button type="submit" class="primary-btn" style="margin-top: 10px; width: 100%;">Update Password</button>
-                    </form>
-                </div>
-
-                <div class="panel">
-                    <h3>🛟 Password Recovery</h3>
-                    <p id="recoveryStatus" style="margin-bottom: 12px;"></p>
-                    <form id="recoveryForm" onsubmit="saveRecoveryQuestion(event)" style="max-width: 500px;">
-                        <label for="settingsRecoveryQuestion">Recovery question</label>
-                        <select id="settingsRecoveryQuestion" required><option value="">Choose a question...</option><option value="What was the name of your first pet?">What was the name of your first pet?</option><option value="In what city were you born?">In what city were you born?</option><option value="What is your favorite book?">What is your favorite book?</option><option value="What was your childhood nickname?">What was your childhood nickname?</option><option value="What was the name of your first school?">What was the name of your first school?</option></select>
-
-                        <label for="settingsRecoveryAnswer">Your answer</label>
-                        <input type="text" id="settingsRecoveryAnswer" placeholder="Your answer" autocomplete="off" required>
-
-                        <label for="recoveryCurrentPassword">Current Password</label>
-                        <input type="password" id="recoveryCurrentPassword" placeholder="Confirm with your password" required>
-
-                        <p id="recoveryError" class="error-message"></p>
-                        <button type="submit" class="primary-btn" style="margin-top: 10px; width: 100%;">Save Recovery Question</button>
+                        <button type="submit" class="primary-btn" style="margin-top: 10px; width: 100%;">Change Password</button>
                     </form>
                 </div>
 
@@ -737,6 +693,55 @@
                 </div>
             </section>
 
+            <section id="aiAssistant" class="page">
+                <div class="panel ai-assistant-intro">
+                    <div class="ai-assistant-icon" aria-hidden="true">✨</div>
+                    <div>
+                        <h3>Your AI reading assistant</h3>
+                        <p>Search the web for reading help and book recommendations with TinyFish.</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h3>📚 Find your next book</h3>
+                            <p>Find web recommendations based on your interests and reading history.</p>
+                        </div>
+                    </div>
+                    <form id="aiRecommendationForm" class="ai-recommendation-form">
+                        <label for="aiRecommendationPrompt">What kind of book are you looking for?</label>
+                        <div class="ai-recommendation-controls">
+                            <input id="aiRecommendationPrompt" type="text" maxlength="500" placeholder="e.g. beginner-friendly books about Python" required>
+                            <button id="aiRecommendationButton" type="submit" class="primary-btn">Search recommendations</button>
+                        </div>
+                    </form>
+                    <p id="aiRecommendationStatus" class="ai-assistant-status" aria-live="polite"></p>
+                    <div id="aiRecommendationResults" class="ai-recommendation-results" aria-live="polite"></div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h3>💬 Chat with the assistant</h3>
+                            <p>Ask a question to search the web and explore relevant sources.</p>
+                        </div>
+                    </div>
+                    <div id="aiChatMessages" class="ai-chat-messages" role="log" aria-live="polite" aria-label="AI assistant conversation">
+                        <div class="ai-chat-message assistant">
+                            <span class="ai-chat-label">AI Assistant</span>
+                            <p>Hi! Tell me what you are interested in, and I’ll search the web for useful reading resources.</p>
+                        </div>
+                    </div>
+                    <p id="aiChatStatus" class="ai-assistant-status" aria-live="polite"></p>
+                    <form id="aiChatForm" class="ai-chat-form">
+                        <label class="sr-only" for="aiChatInput">Search with the AI assistant</label>
+                        <input id="aiChatInput" type="text" maxlength="500" placeholder="Search for books or reading resources..." autocomplete="off" required>
+                        <button id="aiChatSendButton" type="submit" class="primary-btn">Send</button>
+                    </form>
+                </div>
+            </section>
+
             <section id="support" class="page admin-only hidden">
                 <div class="panel">
                     <div class="panel-heading">
@@ -840,6 +845,31 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="panel admin-analytics-panel">
+                    <div class="panel-heading admin-analytics-heading">
+                        <div><h3>📈 Predictive Library Analytics</h3><p>Borrowing patterns, popular categories, busy periods, and a simple demand estimate from saved loan history.</p></div>
+                        <button type="button" class="secondary-btn" onclick="exportAdminReport()">Download report</button>
+                    </div>
+                    <div id="adminAnalyticsSummary" class="admin-analytics-summary"></div>
+                    <div class="admin-chart-grid">
+                        <section class="admin-chart-card"><h4>Most borrowed books</h4><div id="adminPopularBooks" class="admin-bar-chart"></div></section>
+                        <section class="admin-chart-card"><h4>Popular categories</h4><div id="adminPopularCategories" class="admin-bar-chart"></div></section>
+                        <section class="admin-chart-card"><h4>Peak borrowing periods</h4><div id="adminPeakPeriods" class="admin-bar-chart"></div></section>
+                        <section class="admin-chart-card admin-forecast-card"><h4>Next 30 days · demand estimate</h4><div id="adminDemandForecast"></div><small>Estimate uses the recent 30 day average. It is a planning aid, not a guaranteed forecast.</small></section>
+                    </div>
+                </div>
+
+                <div class="panel admin-overdue-panel">
+                    <div class="panel-heading"><div><h3>⏰ Overdue Management</h3><p>Review active overdue loans and the estimated penalty. Penalty is calculated per day late.</p></div></div>
+                    <div class="overdue-settings-row"><label for="overduePenaltyRate">Penalty per overdue day</label><div><span>₱</span><input id="overduePenaltyRate" type="number" min="0" step="1" value="10"><button type="button" class="secondary-btn" onclick="saveOverdueSettings()">Save rate</button></div><small>Frontend demo setting. Connect this rule to your backend before launch.</small></div>
+                    <div class="table-wrapper"><table><thead><tr><th>Book</th><th>Borrower</th><th>Due date</th><th>Days late</th><th>Estimated penalty</th><th>Action</th></tr></thead><tbody id="adminOverdueTable"></tbody></table></div>
+                </div>
+
+                <div class="panel admin-audit-panel">
+                    <div class="panel-heading"><div><h3>🧾 Admin Activity Audit Trail</h3><p>Recent admin and librarian actions recorded in this browser.</p></div><button type="button" class="secondary-btn" onclick="exportAdminReport()">Export report</button></div>
+                    <div class="table-wrapper"><table><thead><tr><th>Timestamp</th><th>Account</th><th>Action</th><th>Details</th></tr></thead><tbody id="adminAuditTable"></tbody></table></div>
+                </div>
             </section>
         </main>
 
@@ -847,6 +877,44 @@
             <p>Penetrative Library © 2026 • Click logo for Help</p>
         </footer>
     </div>
+
+<div id="signOutModal" class="help-modal hidden" role="dialog" aria-modal="true" aria-labelledby="signOutTitle" aria-describedby="signOutDescription">
+    <div class="help-modal-overlay" onclick="closeSignOutModal()"></div>
+    <div class="help-modal-content signout-dialog">
+        <div class="signout-icon" aria-hidden="true">↗</div>
+        <span class="signout-eyebrow">PENETRATIVE LIBRARY</span>
+        <h2 id="signOutTitle">Sign out?</h2>
+        <p id="signOutDescription">Are you sure you want to sign out of your account?</p>
+        <div class="signout-actions">
+            <button id="cancelSignOutButton" type="button" class="secondary-btn" onclick="closeSignOutModal()">Cancel</button>
+            <button id="confirmSignOutButton" type="button" class="signout-confirm-btn" onclick="confirmSignOut()">Sign out</button>
+        </div>
+    </div>
+</div>
+
+<div id="forgotPasswordModal" class="help-modal hidden" role="dialog" aria-modal="true" aria-labelledby="forgotPasswordTitle">
+    <div class="help-modal-overlay" onclick="closeForgotPasswordModal()"></div>
+    <div class="help-modal-content forgot-password-dialog">
+        <button type="button" class="help-close" onclick="closeForgotPasswordModal()" aria-label="Close">×</button>
+        <h2 id="forgotPasswordTitle">Reset your password</h2>
+        <p class="forgot-password-note">Enter the username and email saved on your account. This frontend demo checks them on this device and does not send a real email.</p>
+        <form id="forgotPasswordForm" onsubmit="resetForgottenPassword(event)">
+            <label for="recoveryUsername">Username</label>
+            <input id="recoveryUsername" type="text" autocomplete="username" required>
+            <label for="recoveryEmail">Account email</label>
+            <input id="recoveryEmail" type="email" autocomplete="email" required>
+            <label for="recoveryNewPassword">New password (8+ characters; symbols _ @ - # ? ! only)</label>
+            <input id="recoveryNewPassword" type="password" minlength="8" autocomplete="new-password" required>
+            <label for="recoveryConfirmPassword">Confirm new password</label>
+            <input id="recoveryConfirmPassword" type="password" minlength="8" autocomplete="new-password" required>
+            <p id="recoveryPasswordError" class="error-message" aria-live="polite"></p>
+            <div class="forgot-password-actions">
+                <button type="button" class="secondary-btn" onclick="closeForgotPasswordModal()">Cancel</button>
+                <button type="submit" class="primary-btn">Reset password</button>
+            </div>
+        </form>
+    </div>
+</div>
 
     <div id="bookDetailPanel" class="detail-panel-wrapper hidden">
         <div id="detailBackdrop" class="detail-backdrop" onclick="closeBookDetailPanel()"></div>
@@ -936,8 +1004,46 @@
             <button class="help-close" onclick="closePremiumModal()">×</button>
             <div style="font-size: 50px; margin-bottom: 10px;">⭐</div>
             <h2 style="color: #f59e0b;">Upgrade to Gold Premium</h2>
-            <p style="margin-bottom: 20px;">Unlock all 75 exclusive premium books, priority borrowing, 6 exclusive premium themes (Galaxy, Cyber Neon, Matrix Code, Aurora Lights, Golden Sunset, Royal Gold), and advanced animations for just <strong>₱99 / month</strong>!</p>
-            <button class="primary-btn" onclick="confirmUpgradePremium()" style="width: 100%; padding: 12px; font-size: 16px; background: linear-gradient(135deg, #f59e0b, #d97706);">Confirm Gold Subscription (₱99)</button>
+            <p class="premium-payment-intro">Unlock all 75 exclusive Premium books, priority borrowing, gold luxury theme, and advanced animations for <strong>₱99 / month</strong>.</p>
+            <div class="premium-payment-box">
+                <p class="payment-demo-banner">Demo payment UI · No real payment will be processed.</p>
+                <fieldset class="premium-payment-methods">
+                    <legend>Choose a payment method</legend>
+                    <label><input type="radio" name="premiumPaymentMethod" value="gcash" checked onchange="togglePremiumPaymentDetails()"><span class="payment-method-logo gcash-logo">G</span><span><strong>GCash</strong><small>Mobile wallet</small></span></label>
+                    <label><input type="radio" name="premiumPaymentMethod" value="maya" onchange="togglePremiumPaymentDetails()"><span class="payment-method-logo maya-logo">M</span><span><strong>Maya</strong><small>Mobile wallet</small></span></label>
+                    <label><input type="radio" name="premiumPaymentMethod" value="bank" onchange="togglePremiumPaymentDetails()"><span class="payment-method-logo bank-logo">▤</span><span><strong>Online Banking</strong><small>Bank transfer</small></span></label>
+                </fieldset>
+                <div id="premiumGcashDetails" class="payment-method-details">
+                    <div class="payment-qr-placeholder" role="img" aria-label="Illustrative demo QR code"><span></span><span></span><span></span><b>PL</b></div>
+                    <div><strong>Pay with GCash</strong><p>This sample QR is for display only.</p><label for="premiumGcashNumber">GCash mobile number</label><input id="premiumGcashNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="09XXXXXXXXX" maxlength="13"><small>Your number is used only for this demo screen.</small></div>
+                </div>
+                <div id="premiumMayaDetails" class="payment-method-details hidden"><strong>Pay with Maya</strong><p>Maya checkout is simulated in this demo.</p></div>
+                <div id="premiumBankDetails" class="payment-method-details hidden"><label for="premiumBankSelect">Choose your bank</label><select id="premiumBankSelect"><option>BDO</option><option>BPI</option><option>Metrobank</option><option>UnionBank</option><option>Landbank</option></select><p>Bank transfer is simulated in this demo.</p></div>
+                <p id="premiumPaymentError" class="payment-inline-error" aria-live="polite"></p>
+            </div>
+            <button class="primary-btn premium-payment-submit" onclick="confirmUpgradePremium()">Continue with demo payment · ₱99</button>
+        </div>
+    </div>
+
+    <div id="checkoutPaymentModal" class="help-modal hidden" role="dialog" aria-modal="true" aria-labelledby="checkoutPaymentTitle">
+        <div class="help-modal-overlay" onclick="closeCheckoutPayment()"></div>
+        <div class="help-modal-content checkout-payment-content">
+            <button class="help-close" type="button" onclick="closeCheckoutPayment()" aria-label="Close">×</button>
+            <span class="checkout-payment-eyebrow">SECURE CHECKOUT · DEMO</span>
+            <h2 id="checkoutPaymentTitle">Choose your payment</h2>
+            <p class="checkout-payment-subtitle">Review your order and select a payment method. This UI is a frontend demo; no real payment is processed.</p>
+            <div id="checkoutOrderSummary" class="checkout-order-summary"></div>
+            <fieldset class="premium-payment-methods checkout-payment-methods">
+                <legend>Payment method</legend>
+                <label><input type="radio" name="checkoutPaymentMethod" value="gcash" checked onchange="toggleCheckoutPaymentDetails()"><span class="payment-method-logo gcash-logo">G</span><span><strong>GCash</strong><small>Mobile wallet</small></span></label>
+                <label><input type="radio" name="checkoutPaymentMethod" value="maya" onchange="toggleCheckoutPaymentDetails()"><span class="payment-method-logo maya-logo">M</span><span><strong>Maya</strong><small>Mobile wallet</small></span></label>
+                <label><input type="radio" name="checkoutPaymentMethod" value="bank" onchange="toggleCheckoutPaymentDetails()"><span class="payment-method-logo bank-logo">▤</span><span><strong>Online Banking</strong><small>Bank transfer</small></span></label>
+            </fieldset>
+            <div id="checkoutGcashDetails" class="payment-method-details"><div class="payment-qr-placeholder" role="img" aria-label="Illustrative demo GCash QR code"><span></span><span></span><span></span><b>PL</b></div><div><strong>Pay with GCash</strong><p>Scan display-only demo QR or enter your GCash mobile number.</p><label for="checkoutGcashNumber">GCash mobile number</label><input id="checkoutGcashNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="09XXXXXXXXX" maxlength="13"><small>Demo only. Do not enter real payment credentials.</small></div></div>
+            <div id="checkoutMayaDetails" class="payment-method-details hidden"><strong>Pay with Maya</strong><p>Maya checkout is simulated in this frontend demo.</p></div>
+            <div id="checkoutBankDetails" class="payment-method-details hidden"><div><label for="checkoutBankSelect">Choose your bank</label><select id="checkoutBankSelect"><option>BDO</option><option>BPI</option><option>Metrobank</option><option>UnionBank</option><option>Landbank</option></select><p>Bank transfer is simulated in this frontend demo.</p></div></div>
+            <p id="checkoutPaymentError" class="payment-inline-error" aria-live="polite"></p>
+            <button type="button" class="primary-btn checkout-confirm-button" onclick="confirmCheckoutPayment()">Confirm demo payment</button>
         </div>
     </div>
 
@@ -976,7 +1082,7 @@
     <div id="chatWidget" class="chat-widget hidden">
         <div class="chat-header">
             <div>
-                <strong>🤖 Library AI Assistant</strong>
+                <strong>💬 Customer Service</strong>
                 <span id="chatPresence" class="chat-presence"></span>
             </div>
             <button id="chatClose" class="chat-close" title="Close">×</button>
